@@ -41,7 +41,7 @@ export async function Header({ siteName }: { siteName?: string }) {
           <button
             type="button"
             aria-label="메뉴 열기"
-            className="flex h-5 w-6 flex-col justify-between"
+            className="flex h-5 w-6 flex-col justify-between md:hidden"
           >
             <span className="h-px w-full bg-foreground" />
             <span className="h-px w-full bg-foreground" />
