@@ -12,6 +12,7 @@ export function SlotImage({
   className,
   fill,
   sizes,
+  fallbackSrc,
 }: {
   slots: ImageSlot[];
   slotKey: string;
@@ -21,16 +22,18 @@ export function SlotImage({
   className?: string;
   fill?: boolean;
   sizes?: string;
+  /** Local /public path used when no Sanity image is set for this slot. */
+  fallbackSrc?: string;
 }) {
   const slot = findSlot(slots, slotKey);
-  const url = imageUrl(slot?.image, width, height);
+  const url = imageUrl(slot?.image, width, height) ?? fallbackSrc ?? null;
 
   if (!url) {
     return (
       <div
         className={
           className ??
-          "flex aspect-square w-full items-center justify-center bg-zinc-100 text-xs text-zinc-400 dark:bg-zinc-900"
+          "flex aspect-square w-full items-center justify-center bg-zinc-100 text-xs text-zinc-400"
         }
       >
         slot: {slotKey}

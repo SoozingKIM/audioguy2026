@@ -1,26 +1,177 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* Figma design tokens */
+  --background: #f7f9fa; /* background/primary */
+  --background-white: #ffffff; /* background/wh */
+  --foreground: #121315; /* Primary */
+  --secondary: #3a3c3f; /* Secondary */
+  --tertiary: #808285; /* tertiary */
+  --disabled: #aaabad; /* disabled */
 }
 
 @theme inline {
   --color-background: var(--background);
+  --color-background-white: var(--background-white);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  --color-secondary: var(--secondary);
+  --color-tertiary: var(--tertiary);
+  --color-disabled: var(--disabled);
+  --font-sans:
+    "Pretendard", "Pretendard Variable", -apple-system, BlinkMacSystemFont,
+    system-ui, sans-serif;
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
-}
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family:
+    "Pretendard", "Pretendard Variable", -apple-system, BlinkMacSystemFont,
+    system-ui, sans-serif;
+  letter-spacing: -0.01em;
+}
+
+@layer components {
+  /* SEORO hero — diagonal slate-blue → warm beige (Figma Frame 211) */
+  .seoro-hero {
+    background: linear-gradient(
+      152deg,
+      #3b5c7a 0%,
+      #5e8aad 40%,
+      #b9bcae 76%,
+      #dcc7a6 100%
+    );
+  }
+
+  /* SK Gateway-style card interaction */
+  .gateway-card {
+    position: relative;
+    display: block;
+    overflow: hidden;
+    background: #000;
+  }
+
+  .gateway-card-bg {
+    position: absolute;
+    inset: 0;
+    z-index: 0;
+    opacity: 0.7;
+    transition: opacity 0.5s ease-out, transform 0.7s ease-out;
+  }
+
+  .gateway-card:hover .gateway-card-bg,
+  .gateway-card:focus-visible .gateway-card-bg {
+    opacity: 0.85;
+    transform: scale(1.04);
+  }
+
+  /* Animated link underline: static line + drawing line on hover */
+  .gateway-link {
+    position: relative;
+    display: inline-block;
+    padding-bottom: 10px;
+  }
+
+  .gateway-link::before,
+  .gateway-link::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 1px;
+    background: #fff;
+    transition: all 0.5s ease-out;
+  }
+
+  .gateway-link::before {
+    width: 100%;
+    opacity: 0.5;
+  }
+
+  .gateway-link::after {
+    width: 0%;
+    opacity: 1;
+  }
+
+  .gateway-card:hover .gateway-link::before,
+  .gateway-card:focus-visible .gateway-link::before {
+    opacity: 0;
+  }
+
+  .gateway-card:hover .gateway-link::after,
+  .gateway-card:focus-visible .gateway-link::after {
+    width: 100%;
+  }
+
+  /* 4-line border that draws in on hover */
+  .line-ani {
+    position: absolute;
+    z-index: 1;
+    pointer-events: none;
+    inset: 10px;
+  }
+
+  .line-ani::before,
+  .line-ani::after,
+  .line-ani-v::before,
+  .line-ani-v::after {
+    content: "";
+    position: absolute;
+    background: #fff;
+    opacity: 0;
+    transition: all 0.5s ease-out;
+  }
+
+  .line-ani::before {
+    top: 0;
+    left: 0;
+    height: 1px;
+    width: 0%;
+  }
+
+  .line-ani::after {
+    bottom: 0;
+    left: 0;
+    height: 1px;
+    width: 0%;
+  }
+
+  .line-ani-v {
+    position: absolute;
+    inset: 0;
+  }
+
+  .line-ani-v::before {
+    top: 0;
+    left: 0;
+    width: 1px;
+    height: 0%;
+  }
+
+  .line-ani-v::after {
+    top: 0;
+    right: 0;
+    width: 1px;
+    height: 0%;
+  }
+
+  .gateway-card:hover .line-ani::before,
+  .gateway-card:focus-visible .line-ani::before,
+  .gateway-card:hover .line-ani::after,
+  .gateway-card:focus-visible .line-ani::after {
+    width: 100%;
+    opacity: 1;
+    transition: all 0.5s ease-in-out;
+  }
+
+  .gateway-card:hover .line-ani-v::before,
+  .gateway-card:focus-visible .line-ani-v::before,
+  .gateway-card:hover .line-ani-v::after,
+  .gateway-card:focus-visible .line-ani-v::after {
+    height: 100%;
+    opacity: 1;
+    transition: all 0.5s ease-in-out;
+  }
 }

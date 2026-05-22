@@ -27,7 +27,9 @@ const DISCOGRAPHY_FIELDS = `
   scopes[]->{ _id, title, "slug": slug.current }
 `;
 
-const DISCOGRAPHY_ORDER = `coalesce(orderRank, "zzzzzzzz") asc, _createdAt asc`;
+// Newest-added first: most recently created Sanity docs appear at the front of
+// page 1 (used by the discography list page and the per-brand previews).
+const DISCOGRAPHY_ORDER = `_createdAt desc`;
 
 export const discographyListQuery = groq`*[_type == "discographyEntry"
   && (!defined($brand) || brand == $brand)

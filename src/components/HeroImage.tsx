@@ -20,7 +20,7 @@ export function HeroImage({
       <div
         className={
           className ??
-          "relative aspect-[16/9] w-full bg-gradient-to-br from-zinc-200 to-zinc-300 dark:from-zinc-800 dark:to-zinc-900"
+          "relative aspect-21/9 max-h-140 w-full bg-linear-to-br from-zinc-200 to-zinc-300 dark:from-zinc-800 dark:to-zinc-900"
         }
         aria-hidden
       />
@@ -29,7 +29,7 @@ export function HeroImage({
   return (
     <div
       className={
-        className ?? "relative aspect-[16/9] w-full overflow-hidden bg-black/5"
+        className ?? "relative aspect-21/9 max-h-140 w-full overflow-hidden bg-black/5"
       }
     >
       <Image

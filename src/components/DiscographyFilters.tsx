@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useTransition } from "react";
 
@@ -114,10 +114,10 @@ function FilterChip({
     <button
       type="button"
       onClick={onClick}
-      className={`inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs transition ${
+      className={`inline-flex items-center gap-2 rounded-full border px-4 py-1.5 text-xs transition ${
         active
           ? "border-foreground bg-foreground text-background"
-          : "border-black/15 hover:border-foreground dark:border-white/15"
+          : "border-foreground/15 text-foreground/60 hover:border-foreground/40 hover:text-foreground"
       }`}
     >
       {dotClass ? (

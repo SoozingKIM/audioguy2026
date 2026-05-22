@@ -1,5 +1,5 @@
 import Image from "next/image";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 import { BrandBadge } from "@/components/BrandBadge";
 import { formatReleaseDate } from "@/lib/format";
@@ -17,28 +17,30 @@ export function DiscographyCard({
   const scopes = entry.scopes?.map((s) => s.title).join(", ");
   const inner = (
     <>
-      <div className="relative aspect-square overflow-hidden rounded-lg bg-black/5 dark:bg-white/5">
+      <div className="relative aspect-square overflow-hidden bg-black/5">
         {cover ? (
           <Image
             src={cover}
             alt={entry.cover?.alt ?? entry.title}
             fill
-            sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
-            className="object-cover transition group-hover:scale-[1.02]"
+            sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+            className="object-cover transition-transform duration-500 ease-out group-hover:scale-[1.04]"
           />
         ) : null}
       </div>
-      <div className="mt-3 flex flex-col gap-1">
-        <div className="text-xs text-foreground/50">
+      <div className="mt-4 flex flex-col gap-1.5">
+        <div className="text-xs uppercase tracking-widest text-foreground/50">
           {formatReleaseDate(entry.releaseDate)}
         </div>
-        <div className="text-sm font-medium leading-tight">{entry.title}</div>
-        <div className="text-xs text-foreground/70">{entry.artist}</div>
+        <div className="text-base font-semibold leading-tight tracking-tight md:text-lg">
+          {entry.title}
+        </div>
+        <div className="text-sm text-foreground/70">{entry.artist}</div>
         {scopes ? (
           <div className="text-xs text-foreground/50">{scopes}</div>
         ) : null}
         {showBrand ? (
-          <div className="mt-1">
+          <div className="mt-2">
             <BrandBadge brand={entry.brand} size="xs" />
           </div>
         ) : null}

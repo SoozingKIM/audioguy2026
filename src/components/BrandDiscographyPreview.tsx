@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 import { DiscographyCard } from "@/components/DiscographyCard";
 import type { BrandValue } from "@/lib/brands";
@@ -12,7 +12,7 @@ import type { DiscographyEntry } from "@/sanity/types";
 export async function BrandDiscographyPreview({
   brand,
   scopeSlug,
-  limit = 3,
+  limit = 5,
   title = "Discography",
   moreHref,
   entries: providedEntries,
@@ -45,7 +45,7 @@ export async function BrandDiscographyPreview({
       : `/discography?brand=${brand}`);
 
   return (
-    <section className="mx-auto max-w-6xl px-6 py-20">
+    <section className="mx-auto max-w-7xl px-6 py-16 sm:px-8 md:py-20 lg:px-12">
       <header className="flex items-end justify-between gap-4">
         <h2 className="text-2xl font-semibold tracking-tight md:text-3xl">
           {title}
@@ -63,7 +63,7 @@ export async function BrandDiscographyPreview({
           아직 등록된 작업이 없습니다.
         </p>
       ) : (
-        <ul className="mt-8 grid grid-cols-1 gap-x-6 gap-y-12 sm:grid-cols-3">
+        <ul className="mt-10 grid grid-cols-2 gap-x-6 gap-y-12 sm:grid-cols-3 lg:grid-cols-5 lg:gap-x-8">
           {entries.map((entry) => (
             <li key={entry._id}>
               <DiscographyCard entry={entry} showBrand={false} />

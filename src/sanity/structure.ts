@@ -26,11 +26,11 @@ export const structure: StructureResolver = (S, context) =>
       S.divider(),
       S.listItem()
         .id("pageImages")
-        .title("페이지 이미지")
+        .title("페이지 콘텐츠")
         .child(
           S.list()
             .id("pageImagesList")
-            .title("페이지 이미지")
+            .title("페이지 콘텐츠")
             .items(
               PAGE_SINGLETONS.map((p) =>
                 S.listItem()

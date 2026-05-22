@@ -1,32 +1,82 @@
+import { getTranslations } from "next-intl/server";
+
+import { Link } from "@/i18n/navigation";
 import type { SiteSettings } from "@/sanity/types";
 
-export function Footer({ settings }: { settings?: SiteSettings | null }) {
-  const year = new Date().getFullYear();
+const FOOTER_NAV_KEYS = [
+  { href: "/", key: "home" },
+  { href: "/audioguy", key: "about" },
+  { href: "/agstudio", key: "audioguy" },
+  { href: "/sound360", key: "sound360" },
+  { href: "/seoro", key: "seoro" },
+  { href: "/discography", key: "discography" },
+  { href: "/contact", key: "contact" },
+] as const;
+
+export async function Footer({
+  settings,
+}: {
+  settings?: SiteSettings | null;
+}) {
+  const t = await getTranslations("Footer");
+  const tNav = await getTranslations("FooterNav");
+
+  const siteName = settings?.siteName ?? "AUDIOGUY";
+  const email = settings?.contactEmail ?? "contact@audioguyrecords.com";
+  const phone = settings?.contactPhone ?? "02-734-3348";
+  const address = settings?.address ?? t("address");
+
   return (
-    <footer className="mt-24 border-t border-black/10 dark:border-white/10">
-      <div className="mx-auto flex max-w-6xl flex-col gap-2 px-6 py-8 text-sm text-foreground/60 md:flex-row md:items-center md:justify-between">
-        <div>
-          © {year} {settings?.siteName ?? "Audioguy"}
-        </div>
-        <div className="flex flex-wrap gap-4">
-          {settings?.contactEmail ? (
-            <a href={`mailto:${settings.contactEmail}`} className="hover:text-foreground">
-              {settings.contactEmail}
-            </a>
-          ) : null}
-          {settings?.socials?.map((s, i) =>
-            s.url ? (
-              <a
-                key={i}
-                href={s.url}
-                target="_blank"
-                rel="noreferrer"
-                className="hover:text-foreground"
+    <footer className="bg-[#0a0a0a] text-white">
+      <div className="mx-auto max-w-7xl px-8 lg:px-14">
+        <div className="flex flex-col gap-8 py-10 md:flex-row md:items-start md:justify-between">
+          <div>
+            <Link
+              href="/"
+              className="text-base font-bold italic tracking-tight"
+            >
+              {siteName.toUpperCase()}
+            </Link>
+            <div className="mt-5 space-y-1.5 text-xs">
+              <div className="flex items-center gap-3">
+                <span className="text-white/40">{t("email")}</span>
+                <a
+                  href={`mailto:${email}`}
+                  className="font-medium hover:underline"
+                >
+                  {email}
+                </a>
+              </div>
+              <div className="flex items-center gap-3">
+                <span className="text-white/40">{t("call")}</span>
+                <a
+                  href={`tel:${phone.replace(/\D/g, "")}`}
+                  className="font-medium hover:underline"
+                >
+                  {phone}
+                </a>
+              </div>
+            </div>
+          </div>
+
+          <nav className="flex flex-wrap gap-6 text-xs">
+            {FOOTER_NAV_KEYS.map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="text-white/70 transition hover:text-white"
               >
-                {s.label ?? s.url}
-              </a>
-            ) : null,
-          )}
+                {tNav(item.key)}
+              </Link>
+            ))}
+          </nav>
+        </div>
+
+        <div className="border-t border-white/15 py-6 text-[11px] text-white/45 md:flex md:items-center md:justify-between">
+          <div>
+            © {siteName.toUpperCase()} {t("rights")}
+          </div>
+          <div className="mt-2 md:mt-0">{address}</div>
         </div>
       </div>
     </footer>
