@@ -1,5 +1,9 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
+import { AuroraBackground } from "@/components/AuroraBackground";
+import { ContactCta } from "@/components/ContactCta";
+import { ParticleGalaxy } from "@/components/ParticleGalaxy";
+import { RevealCards } from "@/components/RevealCards";
 import { Link } from "@/i18n/navigation";
 import { getPageContent, localized } from "@/lib/pageContent";
 
@@ -29,7 +33,6 @@ export default async function HomePage({
   setRequestLocale(locale);
 
   const t = await getTranslations("Home");
-  const tCta = await getTranslations("Cta");
 
   // Sanity-managed content (falls back to the i18n message defaults).
   const c = await getPageContent("homePage");
@@ -38,28 +41,58 @@ export default async function HomePage({
 
   return (
     <>
-      {/* Hero — text in right column, top-aligned (Figma) */}
-      <section className="mx-auto grid max-w-[1440px] grid-cols-1 gap-y-6 px-10 pt-5 pb-10 md:grid-cols-2">
-        <div className="md:col-start-2">
-          <h1 className="text-[32px] font-bold leading-[1.2] tracking-[-1px] text-foreground md:text-[46px] md:tracking-[-1.5px]">
-            {cx("heroTitle1", "hero.title1")}
-            <br />
-            {cx("heroTitle2", "hero.title2")}
-          </h1>
-          <p className="mt-2.5 text-[15px] leading-[1.5] tracking-[-0.18px] text-secondary md:text-[18px]">
-            {cx("heroDesc1", "hero.desc1")}
-            <br />
-            {cx("heroDesc2", "hero.desc2")}
-          </p>
+      {/* Hero — Aurora background (Aceternity) + text in right column */}
+      <section className="relative isolate flex min-h-[68vh] items-center overflow-hidden">
+        <AuroraBackground />
+        {/* Particle galaxy in the empty space left of the hero text
+            (CodePen VoXelo/NPbGqrx, reproduced natively). Desktop only;
+            click it to morph between galaxy / DNA / heart. */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-1/2 items-center justify-center md:flex"
+        >
+          <div className="pointer-events-auto relative aspect-square w-[min(78%,520px)]">
+            {/* Circular halo hugging the sphere — `closest-side` keeps the dark
+                falloff a true circle (corners fully transparent) and rounded-full
+                clips the box to a circle, so no square edge shows behind it.
+                Colour is a deep blue (indigo with extra blue weight) tuned to
+                the hero aurora / brand palette rather than flat black. */}
+            <div
+              className="absolute inset-[-18%] rounded-full"
+              style={{
+                background:
+                  "radial-gradient(circle closest-side at 50% 50%, rgba(26,52,124,0.92) 0%, rgba(26,52,124,0.86) 20%, rgba(26,52,124,0.68) 38%, rgba(26,52,124,0.46) 54%, rgba(26,52,124,0.27) 69%, rgba(26,52,124,0.12) 83%, rgba(26,52,124,0.04) 93%, rgba(26,52,124,0) 100%)",
+                filter: "blur(8px)",
+              }}
+            />
+            <ParticleGalaxy className="absolute inset-0" />
+          </div>
+        </div>
+        {/* pointer-events-none so the empty left column doesn't intercept the
+            galaxy's pointer tracking; the text block re-enables events. */}
+        <div className="pointer-events-none relative z-10 mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-y-6 px-10 py-24 md:grid-cols-2">
+          <div className="pointer-events-auto md:col-start-2">
+            <h1 className="text-[40px] font-bold leading-[1.2] tracking-[-1.3px] text-foreground md:text-[56px] md:tracking-[-1.8px]">
+              {cx("heroTitle1", "hero.title1")}
+              <br />
+              {cx("heroTitle2", "hero.title2")}
+            </h1>
+            <p className="mt-2.5 text-[16px] leading-[1.5] tracking-[-0.16px] text-secondary md:text-[22px] md:tracking-[-0.22px]">
+              {cx("heroDesc1", "hero.desc1")}
+              <br />
+              {cx("heroDesc2", "hero.desc2")}
+            </p>
+          </div>
         </div>
       </section>
 
       {/* 2x2 Brand Cards — reproduced from Figma frames 177 / 186 */}
       <section className="mx-auto max-w-[1440px] px-10 py-5">
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-2">
+        <RevealCards className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {BRAND_CARDS.map((card) => (
             <Link
               key={card.key}
+              data-card
               href={card.href}
               aria-label={cx(`${card.key}Label`, `cards.${card.key}.label`)}
               className="group relative block aspect-[67/40] overflow-hidden"
@@ -70,38 +103,39 @@ export default async function HomePage({
                 className="absolute inset-0 bg-cover bg-center transition-transform duration-700 ease-out group-hover:scale-[1.03]"
                 style={{ backgroundImage: `url(${card.image})` }}
               />
-              {/* Scrim hides the image's baked label/description so the live
-                  (Sanity-editable) text below replaces it cleanly. */}
+              {/* Light scrim keeps the live (Sanity-editable) label/description
+                  legible over the card glow. Card images are exported text-free
+                  from Figma, so this no longer has to fully hide baked text. */}
               <div
                 aria-hidden
-                className="pointer-events-none absolute inset-x-0 bottom-0 h-[45%]"
+                className="pointer-events-none absolute inset-x-0 bottom-0 h-1/2"
                 style={{
                   background:
-                    "linear-gradient(to top, #0a0a0c 0%, rgba(10,10,12,0.9) 60%, rgba(10,10,12,0) 100%)",
+                    "linear-gradient(to top, rgba(10,10,12,0.82) 0%, rgba(10,10,12,0.4) 48%, rgba(10,10,12,0) 100%)",
                 }}
               />
               <div className="absolute inset-x-0 bottom-0 p-7 text-white">
-                <h2 className="text-2xl font-semibold leading-[1.4] tracking-[-0.32px] md:text-[32px]">
+                <h2 className="text-[22px] font-semibold leading-[1.4] tracking-[-0.32px] md:text-[28px]">
                   {cx(`${card.key}Label`, `cards.${card.key}.label`)}
                 </h2>
-                <p className="mt-1.5 max-w-md text-sm leading-[1.4] tracking-[-0.18px] text-white/60 md:text-[18px]">
+                <p className="mt-1.5 max-w-md text-[13px] leading-[1.4] tracking-[-0.18px] text-white/60 md:text-[16px]">
                   {cx(`${card.key}Desc`, `cards.${card.key}.description`)}
                 </p>
               </div>
             </Link>
           ))}
-        </div>
+        </RevealCards>
       </section>
 
       {/* Brand Overview */}
-      <section className="mx-auto max-w-[920px] px-10 py-20 text-center">
+      <section className="mx-auto max-w-[1440px] px-10 py-20 text-center">
         <p className="text-[16px] font-medium tracking-[-0.16px] text-tertiary">
           {cx("overviewLabel", "overview.label")}
         </p>
-        <h2 className="mt-3.5 text-2xl font-semibold leading-[1.4] tracking-[-0.32px] text-foreground md:text-[32px]">
+        <h2 className="mt-3.5 text-balance text-2xl font-semibold leading-[1.4] tracking-[-0.32px] text-foreground md:text-[32px]">
           {cx("overviewTitle", "overview.title")}
         </h2>
-        <div className="mt-3.5 space-y-6 text-[16px] font-medium leading-[1.4] tracking-[-0.2px] text-secondary md:text-[20px]">
+        <div className="mt-3.5 space-y-7 text-balance text-[16px] font-medium leading-[1.4] tracking-[-0.2px] text-secondary md:text-[20px]">
           <p>{cx("overviewP1", "overview.p1")}</p>
           <p>{cx("overviewP2", "overview.p2")}</p>
           <p>{cx("overviewP3", "overview.p3")}</p>
@@ -109,49 +143,9 @@ export default async function HomePage({
         </div>
       </section>
 
-      {/* Contact CTA — Figma Frame 243 (Group 11 glow over #f7f9fa) */}
-      <section className="mx-auto max-w-[1440px] px-10 pb-20">
-        <div className="relative flex flex-col items-center justify-center gap-8 overflow-hidden bg-background px-10 py-16 text-center md:h-[580px] md:flex-row md:justify-between md:px-20 md:py-0 md:text-left">
-          {/* Group 11 glow (Ellipse 1–4), exported from Figma at its native 1622×995 box */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute left-1/2 top-1/2 h-[995px] w-[1622px] -translate-x-1/2 -translate-y-1/2 bg-[length:100%_100%] bg-no-repeat md:left-[calc(50%+282px)] md:top-[calc(50%-27.5px)]"
-            style={{ backgroundImage: "url(/home/cta-glow.svg)" }}
-          />
-          <div className="relative z-10 flex flex-wrap items-center justify-center gap-x-[50px] gap-y-3 text-[18px] font-medium tracking-[-0.18px]">
-            <div className="flex items-center gap-3 whitespace-nowrap">
-              <span className="text-tertiary">{tCta("email")}</span>
-              <span className="text-black">contact@audioguyrecords.com</span>
-            </div>
-            <div className="flex items-center gap-3 whitespace-nowrap">
-              <span className="text-tertiary">{tCta("call")}</span>
-              <span className="text-black">02-734-3348</span>
-            </div>
-          </div>
-          <Link
-            href="/contact"
-            className="group relative z-10 inline-flex items-center gap-5 whitespace-nowrap text-[24px] font-semibold tracking-[-0.24px] text-black"
-          >
-            {tCta("contactUs")}
-            <span className="flex size-[66px] items-center justify-center rounded-full bg-white text-black shadow-sm transition group-hover:translate-x-1">
-              <svg
-                width="22"
-                height="22"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden
-              >
-                <line x1="5" y1="12" x2="19" y2="12" />
-                <polyline points="12 5 19 12 12 19" />
-              </svg>
-            </span>
-          </Link>
-        </div>
-      </section>
+      {/* Contact CTA — full-bleed background, content aligned inside (other
+          pages use this same component). */}
+      <ContactCta />
     </>
   );
 }

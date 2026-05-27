@@ -1,7 +1,7 @@
 {
   "Nav": {
     "home": "home",
-    "about": "audioguy",
+    "about": "about",
     "audioguy": "AGstudio",
     "sound360": "sound360",
     "seoro": "seoro",
@@ -10,7 +10,7 @@
   },
   "FooterNav": {
     "home": "Home",
-    "about": "Audioguy",
+    "about": "About",
     "audioguy": "AG Studio",
     "sound360": "Sound360",
     "seoro": "Seoro",
@@ -50,8 +50,8 @@
         "description": "From recording to spatial sound production, we craft sound to perfection."
       },
       "agstudio": {
-        "label": "AG Studio",
-        "description": "Content needed"
+        "label": "Audioguy Studio",
+        "description": "An audio production space optimized for recording, mixing, mastering, and Dolby Atmos production."
       },
       "sound360": {
         "label": "Sound 360",
@@ -120,8 +120,12 @@
       "subtitle": "Spatial Audio AI Engine",
       "name": "AI-SPHR",
       "description": "AI-SPHR is AUDIOGUY’s proprietary engine that analyzes audio sources, converts them into spatial audio structures, and reviews the output against global platform standards.",
-      "cardTitle": "Dataset-based deep learning",
-      "cardDesc": "Deep learning performed on 6,000 high-quality datasets"
+      "card1Title": "Dataset-driven deep learning",
+      "card1Desc": "Trained a spatial-audio conversion model on 6,000+ high-quality audio datasets.",
+      "card2Title": "Spatial structure analysis",
+      "card2Desc": "Analyzes a track’s frequencies, instrument placement, and reverb characteristics to design a three-dimensional sound structure.",
+      "card3Title": "Platform-optimized rendering",
+      "card3Desc": "Converts the result to meet the standards of global platforms such as Dolby Atmos and Apple Music."
     },
     "people": {
       "label": "LEADERSHIP",
@@ -134,7 +138,9 @@
       "member3Name": "Kim So-yi",
       "member3Role": "Music IP",
       "member4Name": "Oh Dae-gyu",
-      "member4Role": "Spatial Audio_KPOP"
+      "member4Role": "Spatial Audio_KPOP",
+      "member5Name": "An Beom-hyeon",
+      "member5Role": "Engineer / Mixing"
     },
     "proof": {
       "label": "PARTNERSHIP",
@@ -183,11 +189,15 @@
     "team1Name": "Ahn Beom-hyun",
     "team1Role": "Tonmeister",
     "team1Alt": "Ahn Beom-hyun",
+    "team1Bullet1": "Specialist in classical music spatial-sound production",
+    "team1Bullet2": "Active in New York",
+    "team1Bullet3": "Recordings for David Chesky, American Composer Orchestra, NYO Orchestra",
     "team2Name": "Jang Hye-jin",
     "team2Role": "Engineer",
-    "team2Bullet1": "Specialist in classical music spatial-sound production",
-    "team2Bullet2": "Active in New York",
-    "team2Bullet3": "Recordings for David Chesky, American Composer Orchestra, NYO Orchestra"
+    "team2Bullet1": "Major in Applied Music; completed sound-engineering training",
+    "team2Bullet2": "Extensive on-site experience with live SR teams",
+    "team2Bullet3": "Recording and mixing at AUDIOGUY Studio",
+    "team2Bullet4": "Project management at AUDIOGUY Studio"
   },
   "Sound360": {
     "label": "Dolby Atmos",
@@ -200,10 +210,14 @@
     "point3Title": "Dolby Atmos global-standard studio",
     "point3Sub": "A multi-format studio spanning music and XR spatial audio",
     "workScope": "Work scope & services",
-    "service1": "Audio Mixing & Master",
-    "service2": "Podcast Recording & Mixing & Master",
-    "service3": "Concert 3D Audio Mixing & Mastering",
-    "service4": "Post Production",
+    "service1": "Mixing & Mastering",
+    "service1Desc": "We refine the balance and texture of the music to deliver a polished, high-quality sound.",
+    "service2": "Dolby Atmos",
+    "service2Desc": "We add spatial depth and immersion to expand the music listening experience.",
+    "service3": "Post Production",
+    "service3Desc": "We complete sound post-production tailored to video and other content.",
+    "service4": "Facilities",
+    "service4Desc": "We provide an optimal studio environment for professional music production.",
     "studio": "STUDIO",
     "studioSubKr": "Multi-format studio",
     "studioTitle": "Dolby Atmos Global-Standard Studio",
@@ -213,18 +227,18 @@
     "ourTeam": "OUR TEAM",
     "team1Name": "Oh Dae-gyu",
     "team1Role": "Director",
-    "team2Name": "Oh Young-taek",
-    "team2Role": "Team Lead",
-    "team3Name": "Jeon Soo-hyun",
-    "team3Role": "Engineer",
-    "team3Bullet1": "BFA in Sound Design — Practical Music / Electronic Music, Seoul Institute of the Arts",
-    "team3Bullet2": "2023 Crown Crown — full-coverage spatial-audio performance",
-    "team3Bullet3": "The House Concert — integrated mixing",
-    "team3Bullet4": "Yezzi - Time! — recording and Dolby Atmos mixing",
-    "team3Bullet5": "Replica Dream - Vandalism — album mixing",
-    "team3Bullet6": "OLOGI & HEIBE - Butterfly (feat. YUJIN KIM)",
-    "team3Bullet7": "There Are No Bad Elephants in the World — recording",
-    "team3Bullet8": "Daehoon & Daming - Love sickin' (feat. MINNA) — album recording"
+    "team1Bullet1": "MakeUs Dingo — former Sound Part Lead (Dingo Music, DF all live, advertising, variety & drama content)",
+    "team1Bullet2": "SOUND360 Studio — current Director",
+    "team2Name": "Jeon Soo-hyun",
+    "team2Role": "Engineer",
+    "team2Bullet1": "BFA in Sound Design — Practical Music / Electronic Music, Seoul Institute of the Arts",
+    "team2Bullet2": "2023 Gwacheon National Science Museum Planetarium — spatial-audio performance",
+    "team2Bullet3": "The House Concert — Dolby mixing",
+    "team2Bullet4": "Yezzi - Time! — recording and Dolby Atmos mixing",
+    "team2Bullet5": "Replica Dream - Vandalism — album mixing",
+    "team2Bullet6": "OLOGI & HEIBE - Butterfly (feat. YUJIN KIM)",
+    "team2Bullet7": "There Are No Bad Tigers in the World — recording",
+    "team2Bullet8": "Taehoon & Dabit - Love sickin' (feat. MINNA) — album recording"
   },
   "Seoro": {
     "label": "SEORO",

@@ -1,15 +1,18 @@
 import { getTranslations } from "next-intl/server";
 
+import { BrandLogo } from "@/components/BrandLogo";
 import { Link } from "@/i18n/navigation";
 import type { SiteSettings } from "@/sanity/types";
 
+// 네비바(Header)의 NAV_KEYS와 동일하게 유지
 const FOOTER_NAV_KEYS = [
-  { href: "/", key: "home" },
+  // { href: "/", key: "home" },
   { href: "/audioguy", key: "about" },
   { href: "/agstudio", key: "audioguy" },
   { href: "/sound360", key: "sound360" },
   { href: "/seoro", key: "seoro" },
-  { href: "/discography", key: "discography" },
+  // 임시 숨김: 네비바와 맞춰 discography 제거 (복구하려면 주석 해제)
+  // { href: "/discography", key: "discography" },
   { href: "/contact", key: "contact" },
 ] as const;
 
@@ -31,12 +34,10 @@ export async function Footer({
       <div className="mx-auto max-w-7xl px-8 lg:px-14">
         <div className="flex flex-col gap-8 py-10 md:flex-row md:items-start md:justify-between">
           <div>
-            <Link
-              href="/"
-              className="text-base font-bold italic tracking-tight"
-            >
-              {siteName.toUpperCase()}
-            </Link>
+            <BrandLogo
+              label={siteName.toUpperCase()}
+              className="block h-5 w-32 bg-white"
+            />
             <div className="mt-5 space-y-1.5 text-xs">
               <div className="flex items-center gap-3">
                 <span className="text-white/40">{t("email")}</span>

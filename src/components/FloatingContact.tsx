@@ -1,8 +1,8 @@
-"use client";
+'use client';
 
-import { useTranslations } from "next-intl";
+import { useTranslations } from 'next-intl';
 
-import { Link, usePathname } from "@/i18n/navigation";
+import { Link, usePathname } from '@/i18n/navigation';
 
 function ArrowIcon() {
   return (
@@ -24,16 +24,18 @@ function ArrowIcon() {
 }
 
 export function FloatingContact() {
-  const t = useTranslations("Cta");
+  const t = useTranslations('Cta');
   const pathname = usePathname();
 
   // Already on the contact page — no need to float the CTA.
-  if (pathname === "/contact") return null;
+  if (pathname === '/contact') return null;
 
-  const label = t("contactUs");
-  // Symmetric pattern (label + " • " + label + " • ") stretched to exactly fill
-  // the circle, so the two labels sit 180° apart with a dot centered between each.
-  const ring = `${label} • ${label} • `;
+  const label = t('contactUs');
+  // Two labels 180° apart on the ring. A non-breaking space after EACH label
+  // (including a trailing one) keeps both gaps — the middle and the wrap seam —
+  // even, so the second label never butts against the first. Regular trailing
+  // spaces get trimmed in SVG text, so U+00A0 is used.
+  const ring = `${label}  ${label}  `;
 
   return (
     <div className="group fixed bottom-6 right-6 z-40 hidden size-22 md:block">

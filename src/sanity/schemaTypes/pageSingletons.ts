@@ -60,6 +60,7 @@ const aboutContentPaths = [
   "people.label", "people.title", "people.description",
   "people.member1Name", "people.member1Role", "people.member2Name", "people.member2Role",
   "people.member3Name", "people.member3Role", "people.member4Name", "people.member4Role",
+  "people.member5Name", "people.member5Role",
   "proof.label", "proof.title", "proof.description",
   "presence.label", "presence.title", "presence.description",
   "presence.studio1Name", "presence.studio1DescKr", "presence.studio1DescEn",
@@ -162,6 +163,30 @@ const featuredLocationRecordingField: ExtraField = defineField({
   validation: (Rule) => Rule.max(5),
 });
 
+// Hero background video. When set, the page hero plays this instead of its
+// default background; leave empty to keep the original hero.
+const heroVideoField: ExtraField = defineField({
+  name: "heroVideo",
+  title: "Hero 배경 동영상",
+  description:
+    "히어로 배경에 자동 재생(무음·반복)되는 동영상. mp4 권장(webm도 가능). 업로드하면 기존 배경 대신 재생되고, 비워두면 원래 배경이 유지됩니다.",
+  type: "file",
+  options: { accept: "video/*" },
+  group: "media",
+});
+
+// Optional sound for the hero video. Browsers block autoplay-with-sound, so
+// when on, the hero shows a speaker toggle the visitor taps to enable sound.
+const heroVideoSoundField: ExtraField = defineField({
+  name: "heroVideoSound",
+  title: "배경 동영상 소리 사용",
+  description:
+    "켜면 히어로에 '소리 켜기' 버튼이 표시됩니다. (브라우저 정책상 동영상은 항상 무음으로 자동재생되고, 방문자가 버튼을 눌러야 소리가 납니다.)",
+  type: "boolean",
+  initialValue: false,
+  group: "media",
+});
+
 // ── Per-page localized content fields ──────────────────────────────────────
 const homeContent: ExtraField[] = [
   ls("heroTitle1", "히어로 제목 1"),
@@ -196,9 +221,10 @@ export const PAGE_SINGLETONS: PageSingletonConfig[] = [
     contentFields: contentFields(aboutContentPaths, aboutContentMulti),
     imageSections: [
       { name: "ecosystemImages", title: "Ecosystem · 이미지 (key: ecosystem)" },
-      { name: "peopleImages", title: "People · 팀 사진 (key: team-1 ~ team-4)" },
+      { name: "peopleImages", title: "People · 팀 사진 (key: team-1 ~ team-5)" },
       { name: "presenceImages", title: "Presence · 스튜디오 (key: studio-1, studio-2)" },
     ],
+    extraFields: [heroVideoField, heroVideoSoundField],
   },
   {
     name: "audioguyPage",
@@ -215,6 +241,8 @@ export const PAGE_SINGLETONS: PageSingletonConfig[] = [
     extraFields: [
       featuredDiscographyField("audioguy"),
       featuredLocationRecordingField,
+      heroVideoField,
+      heroVideoSoundField,
     ],
   },
   {
@@ -225,7 +253,11 @@ export const PAGE_SINGLETONS: PageSingletonConfig[] = [
       { name: "studioImages", title: "Studio · 캐러셀 (key: studio, studio-2, studio-3, studio-4)" },
       { name: "teamImages", title: "Our Team · 팀 사진 (key: team-1, team-2)" },
     ],
-    extraFields: [featuredDiscographyField("sound360")],
+    extraFields: [
+      featuredDiscographyField("sound360"),
+      heroVideoField,
+      heroVideoSoundField,
+    ],
   },
   {
     name: "seoroPage",

@@ -2,12 +2,14 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { ContactCta } from "@/components/ContactCta";
 import { SlotImage } from "@/components/SlotImage";
+import { YouTubeEmbed } from "@/components/YouTubeEmbed";
 import {
   ServiceAccordion,
   type ServiceItem,
 } from "@/components/ServiceAccordion";
 import { TeamGrid, type TeamMember } from "@/components/TeamGrid";
-import { Link } from "@/i18n/navigation";
+// 임시 숨김: discography "더보기" 버튼 주석 처리로 Link 미사용 (복구 시 주석 해제)
+// import { Link } from "@/i18n/navigation";
 import { contentResolver, getPageContent } from "@/lib/pageContent";
 import { getPageImages } from "@/lib/pageImages";
 
@@ -86,36 +88,30 @@ export default async function AudioguyPage({
       name: cx("team1Name"),
       role: cx("team1Role"),
       slotKey: "team-1",
-      fallbackSrc: "/audioguy/team-1.jpg",
-      bio: [],
+      bio: [cx("team1Bullet1"), cx("team1Bullet2"), cx("team1Bullet3")],
     },
     {
       name: cx("team2Name"),
       role: cx("team2Role"),
       slotKey: "team-2",
-      bio: [cx("team2Bullet1"), cx("team2Bullet2"), cx("team2Bullet3")],
+      bio: [
+        cx("team2Bullet1"),
+        cx("team2Bullet2"),
+        cx("team2Bullet3"),
+        cx("team2Bullet4"),
+      ],
     },
   ];
 
   return (
     <>
-      {/* Hero — background video slot. A "VIDEO" placeholder poster shows until
-          a video file is provided at /agstudio/hero.mp4. */}
-      <section className="relative h-[70vh] max-h-[760px] min-h-125 w-full overflow-hidden bg-black">
-        <video
-          className="absolute inset-0 h-full w-full object-cover"
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="metadata"
-          aria-label={cx("heroAlt")}
-          poster="/agstudio/hero-poster.svg"
-        >
-          <source src="/agstudio/hero.mp4" type="video/mp4" />
-          <source src="/agstudio/hero.webm" type="video/webm" />
-        </video>
-        <div className="absolute inset-0 bg-linear-to-b from-black/20 via-transparent to-black/60" />
+      {/* Hero — brand video (YouTube embed player) */}
+      <section className="w-full overflow-hidden bg-black">
+        <YouTubeEmbed
+          id="SdM2atZpEtA"
+          title={cx("heroAlt")}
+          className="mx-auto max-w-[1600px]"
+        />
       </section>
 
       {/* Introduction — services as a click-to-expand accordion */}
@@ -170,12 +166,14 @@ export default async function AudioguyPage({
               <span className="text-[15px] font-medium tracking-[-0.18px] text-foreground md:text-[18px]">
                 {rowLabel}
               </span>
+              {/* 임시 숨김: discography "더보기" 버튼 (복구하려면 주석 해제 + 상단 Link import 복구)
               <Link
                 href="/discography?brand=audioguy"
                 className="text-[15px] font-medium tracking-[-0.15px] text-tertiary underline-offset-4 hover:text-foreground hover:underline"
               >
                 {tCommon("viewMore")}
               </Link>
+              */}
             </div>
             <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
               {DISCOGRAPHY_PLACEHOLDERS.map((_, i) => (

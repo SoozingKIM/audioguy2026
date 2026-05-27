@@ -5,6 +5,8 @@ import {
   PeopleCarousel,
   type PeopleMember,
 } from "@/components/PeopleCarousel";
+import { RevealCards } from "@/components/RevealCards";
+import { SectionReveal } from "@/components/SectionReveal";
 import { SlotImage } from "@/components/SlotImage";
 import { contentResolver, getPageContent } from "@/lib/pageContent";
 import { getPageImages } from "@/lib/pageImages";
@@ -79,7 +81,7 @@ export default async function AboutPage({
   const cx = contentResolver(c, locale, t);
   const { images } = await getPageImages("aboutPage");
 
-  const people: PeopleMember[] = [1, 2, 3, 4].map((i) => ({
+  const people: PeopleMember[] = [1, 2, 3, 4, 5].map((i) => ({
     slotKey: `team-${i}`,
     fallbackSrc: `/about/team-${i}.jpg`,
     name: cx(`people.member${i}Name`),
@@ -88,52 +90,54 @@ export default async function AboutPage({
 
   return (
     <>
-      {/* Hero — The Soul (Figma Frame 20) */}
-      <section className="relative flex min-h-[380px] items-center justify-center overflow-hidden bg-background px-10 sm:min-h-[480px] md:min-h-[600px] lg:min-h-[660px]">
-        {/* Layered glow + ripple rings, centered on a fixed-aspect stage */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute left-1/2 top-1/2 aspect-[68/33] w-[760px] -translate-x-1/2 -translate-y-1/2 sm:w-[1040px] md:w-[1360px]"
-        >
-          {HERO_GLOW.map((g, i) => (
-            <div
-              key={i}
-              className="absolute"
-              style={{
-                left: `${g.x}%`,
-                top: `${g.y}%`,
-                width: `${g.w}%`,
-                height: `${g.h}%`,
-                transform: `translate(-50%, -50%)${g.flip ? " scaleX(-1)" : ""}`,
-                backgroundImage: `url(${G}/${g.src}.svg)`,
-                backgroundSize: "100% 100%",
-                backgroundRepeat: "no-repeat",
-              }}
-            />
-          ))}
-        </div>
+      {/* Hero — The Soul (Figma Frame 20): rounded glow card, white centered text */}
+      <section className="mx-auto max-w-7xl px-6 pt-2 lg:px-14">
+        <div className="relative flex min-h-[420px] items-center justify-center overflow-hidden rounded-[20px] bg-background sm:min-h-[500px] md:min-h-[600px] lg:min-h-[660px]">
+          {/* Layered glow + ripple rings, centered on a fixed-aspect stage */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute left-1/2 top-1/2 aspect-[68/33] w-[760px] -translate-x-1/2 -translate-y-1/2 sm:w-[1040px] md:w-[1360px]"
+          >
+            {HERO_GLOW.map((g, i) => (
+              <div
+                key={i}
+                className="absolute"
+                style={{
+                  left: `${g.x}%`,
+                  top: `${g.y}%`,
+                  width: `${g.w}%`,
+                  height: `${g.h}%`,
+                  transform: `translate(-50%, -50%)${g.flip ? " scaleX(-1)" : ""}`,
+                  backgroundImage: `url(${G}/${g.src}.svg)`,
+                  backgroundSize: "100% 100%",
+                  backgroundRepeat: "no-repeat",
+                }}
+              />
+            ))}
+          </div>
 
-        {/* Text, positioned per Figma over the same stage */}
-        <div className="pointer-events-none absolute left-1/2 top-1/2 aspect-[68/33] w-[760px] -translate-x-1/2 -translate-y-1/2 sm:w-[1040px] md:w-[1360px]">
-          <div className="absolute left-1/2 top-[31.8%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-2 text-center">
-            <p className="text-[11px] font-medium uppercase tracking-[0.04em] text-foreground/50 md:text-xs">
-              {cx("hero.eyebrow")}
-            </p>
-            <p className="text-[28px] font-bold leading-[1.2] tracking-[-1px] text-foreground md:text-[40px] md:tracking-[-1.5px]">
-              {cx("hero.soul")}
+          {/* Text — white, positioned per Figma over the same stage */}
+          <div className="pointer-events-none absolute left-1/2 top-1/2 aspect-[68/33] w-[760px] -translate-x-1/2 -translate-y-1/2 text-white sm:w-[1040px] md:w-[1360px]">
+            <div className="absolute left-1/2 top-[31.8%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 text-center">
+              <p className="text-[11px] font-medium uppercase leading-[1.5] tracking-[-0.12px] text-white/60 md:text-xs">
+                {cx("hero.eyebrow")}
+              </p>
+              <p className="text-[28px] font-bold leading-[1.4] tracking-[-1.5px] md:text-[40px]">
+                {cx("hero.soul")}
+              </p>
+            </div>
+            <h1 className="absolute left-1/2 top-[45.2%] w-full -translate-x-1/2 -translate-y-1/2 px-6 text-center text-[30px] font-bold leading-[1.4] tracking-[-0.46px] md:text-[46px]">
+              {cx("hero.title")}
+            </h1>
+            <p className="absolute left-1/2 top-[55%] w-full -translate-x-1/2 -translate-y-1/2 px-6 text-center text-[18px] font-bold leading-[1.4] tracking-[-0.28px] text-white/60 md:text-[28px]">
+              {cx("hero.subtitle")}
             </p>
           </div>
-          <h1 className="absolute left-1/2 top-[45.2%] w-full -translate-x-1/2 -translate-y-1/2 px-6 text-center text-[28px] font-bold leading-[1.4] tracking-[-0.46px] text-white md:text-[46px]">
-            {cx("hero.title")}
-          </h1>
-          <p className="absolute left-1/2 top-[55%] w-full -translate-x-1/2 -translate-y-1/2 px-6 text-center text-[16px] font-bold leading-[1.4] tracking-[-0.28px] text-white/70 md:text-[28px]">
-            {cx("hero.subtitle")}
-          </p>
         </div>
       </section>
 
       {/* The Scale (Figma "Numbers") — decorative bg curve + frosted stat cards */}
-      <section className="relative overflow-hidden pb-12 pt-20">
+      <section data-reveal className="relative overflow-hidden pb-12 pt-20">
         {/* Background: faint grid + purple/blue curve sweeping to the top-right,
             constrained to the 1440 content width and centered (matches Figma frame) */}
         <div
@@ -178,7 +182,7 @@ export default async function AboutPage({
           description={cx("ecosystem.description")}
         />
         <div className="mt-10 grid grid-cols-1 gap-x-10 gap-y-8 md:grid-cols-[1fr_1.3fr]">
-          <div className="relative aspect-4/3 overflow-hidden">
+          <div className="relative aspect-4/3 overflow-hidden md:aspect-auto md:h-full">
             <SlotImage
               slots={images}
               slotKey="ecosystem"
@@ -247,8 +251,34 @@ export default async function AboutPage({
       </section>
 
       {/* Tech — 검증된 기술력 (Dark) */}
-      <section className="mt-24 bg-[#121318] py-20 text-white md:py-24">
-        <div className="mx-auto max-w-7xl px-8 lg:px-14">
+      <section className="relative isolate mt-24 overflow-hidden bg-[#121318] py-64 text-white md:py-80">
+        {/* 위·아래 페이드: 다크 밴드를 위/아래 흰 배경과 자연스럽게 연결 */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 top-0 h-64 md:h-80"
+          style={{
+            background:
+              "linear-gradient(to bottom, #f7f9fa 0%, rgba(247,249,250,0.88) 16%, rgba(247,249,250,0.62) 34%, rgba(247,249,250,0.35) 52%, rgba(247,249,250,0.16) 70%, rgba(247,249,250,0.06) 85%, rgba(247,249,250,0) 100%)",
+          }}
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-x-0 bottom-0 h-64 md:h-80"
+          style={{
+            background:
+              "linear-gradient(to top, #f7f9fa 0%, rgba(247,249,250,0.88) 16%, rgba(247,249,250,0.62) 34%, rgba(247,249,250,0.35) 52%, rgba(247,249,250,0.16) 70%, rgba(247,249,250,0.06) 85%, rgba(247,249,250,0) 100%)",
+          }}
+        />
+        {/* 미세 노이즈(디더링): 8비트 그라데이션 밴딩(줄무늬)을 흩어 안 보이게 */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-soft-light"
+          style={{
+            backgroundImage:
+              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
+          }}
+        />
+        <div className="relative z-10 mx-auto max-w-7xl px-8 lg:px-14">
           <div className="grid grid-cols-1 items-start gap-x-5 gap-y-6 md:grid-cols-2">
             <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
               {cx("tech.title")}
@@ -272,18 +302,18 @@ export default async function AboutPage({
             style={{ backgroundImage: "url(/about/tech-sphere.png)" }}
           />
 
-          <div className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
+          <RevealCards className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-[#222328] p-7">
+              <div key={i} data-card className="bg-[#222328] p-7">
                 <p className="text-xl font-semibold tracking-[-0.24px] md:text-2xl">
-                  {cx("tech.cardTitle")}
+                  {cx(`tech.card${i}Title`)}
                 </p>
                 <p className="mt-2 text-[13px] leading-[1.4] tracking-[-0.15px] text-white/66 md:text-[15px]">
-                  {cx("tech.cardDesc")}
+                  {cx(`tech.card${i}Desc`)}
                 </p>
               </div>
             ))}
-          </div>
+          </RevealCards>
         </div>
       </section>
 
@@ -320,7 +350,7 @@ export default async function AboutPage({
       </section>
 
       {/* The Presence — Studios (Figma "Studio": two centered cards) */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section data-reveal className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
         <SectionHeader
           label={cx("presence.label")}
           title={cx("presence.title")}
@@ -363,6 +393,7 @@ export default async function AboutPage({
       </section>
 
       <ContactCta />
+      <SectionReveal />
     </>
   );
 }

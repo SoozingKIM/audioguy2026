@@ -3,8 +3,10 @@ import { getTranslations, setRequestLocale } from "next-intl/server";
 import { ContactCta } from "@/components/ContactCta";
 import { DspTabs } from "@/components/DspTabs";
 import { PartnerTabs } from "@/components/PartnerTabs";
+import { RevealCards } from "@/components/RevealCards";
 import { SettlementTabs } from "@/components/SettlementTabs";
-import { Link } from "@/i18n/navigation";
+// 임시 숨김: discography "더보기" 버튼 주석 처리로 Link 미사용 (복구 시 주석 해제)
+// import { Link } from "@/i18n/navigation";
 import { contentResolver, getPageContent } from "@/lib/pageContent";
 import { getPageImages } from "@/lib/pageImages";
 
@@ -14,8 +16,10 @@ import { getPageImages } from "@/lib/pageImages";
 const DSP_GROUPS = [
   ["Melon", "genie", "FLO", "Bugs", "VIBE", "YouTube Music", "Spotify", "Apple Music"],
   ["LINE MUSIC", "AWA", "mora", "Recochoku", "Spotify", "Apple Music", "YouTube Music", "Amazon Music"],
-  ["Spotify", "Apple Music", "YouTube Music", "Amazon Music", "Deezer", "TIDAL", "Pandora", "SoundCloud"],
-  ["Dolby Atmos", "Apple Spatial Audio", "Sony 360", "TIDAL"],
+  // "Pandora" 임시 비활성화 — 복구하려면 "TIDAL" 뒤에 "Pandora", 다시 추가
+  ["Spotify", "Apple Music", "YouTube Music", "Amazon Music", "Deezer", "TIDAL", /* "Pandora", */ "SoundCloud"],
+  // 몰입형 탭 (임시 비활성화 — 복구하려면 아래 줄과 DSP_TAB_KEYS의 "dspTab4" 주석 해제)
+  // ["Dolby Atmos", "Apple Spatial Audio", "Sony 360", "TIDAL"],
 ];
 
 const slug = (name: string) =>
@@ -42,7 +46,8 @@ const PROCESS_STEPS = [
   { no: "06", titleKey: "step6Title", pos: "md:col-start-4 md:row-start-2" },
 ];
 
-const DSP_TAB_KEYS = ["dspTab1", "dspTab2", "dspTab3", "dspTab4"] as const;
+// "dspTab4"(몰입형) 임시 비활성화 — 복구하려면 주석 해제 + DSP_GROUPS의 몰입형 그룹도 해제
+const DSP_TAB_KEYS = ["dspTab1", "dspTab2", "dspTab3" /* , "dspTab4" */] as const;
 const SETTLE_TAB_KEYS = [
   "settleTab1",
   "settleTab2",
@@ -183,10 +188,11 @@ export default async function SeoroPage({
           caption={cx("processCaption")}
           description={cx("processDesc")}
         />
-        <div className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4 md:grid-rows-2">
+        <RevealCards className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4 md:grid-rows-2">
           {PROCESS_STEPS.map((step, i) => (
             <div
               key={step.no}
+              data-card
               className={`relative h-[200px] overflow-hidden bg-cover bg-center md:h-[260px] ${step.pos}`}
               style={{ backgroundImage: `url(/seoro/process-${i + 1}.png)` }}
             >
@@ -213,7 +219,7 @@ export default async function SeoroPage({
               </div>
             </div>
           ))}
-        </div>
+        </RevealCards>
       </section>
 
       {/* DSP 네트워크 (Dark) */}
@@ -271,7 +277,8 @@ export default async function SeoroPage({
         />
       </section>
 
-      {/* DISCOGRAPHY */}
+      {/* DISCOGRAPHY — 임시 숨김 (복구하려면 아래 `{false && (` 와 짝 `)}` 래퍼를 제거) */}
+      {false && (
       <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx("discography")}
@@ -280,12 +287,14 @@ export default async function SeoroPage({
           <p className="text-[15px] font-medium tracking-[-0.18px] text-foreground md:text-[18px]">
             {cx("selectedAlbums")}
           </p>
+          {/* 임시 숨김: discography "더보기" 버튼 (복구하려면 주석 해제 + 상단 Link import 복구)
           <Link
             href="/discography?brand=seoro"
             className="text-[15px] font-medium tracking-[-0.15px] text-tertiary underline-offset-4 hover:text-foreground hover:underline"
           >
             {tCommon("viewMore")}
           </Link>
+          */}
         </div>
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {DISCOGRAPHY.map((d) => (
@@ -311,6 +320,7 @@ export default async function SeoroPage({
           <span className="h-1.5 w-1.5 rounded-full bg-foreground/20" />
         </div>
       </section>
+      )}
 
       <ContactCta />
     </>

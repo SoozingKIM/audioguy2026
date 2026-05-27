@@ -1,7 +1,7 @@
 {
   "Nav": {
     "home": "home",
-    "about": "audioguy",
+    "about": "about",
     "audioguy": "AGstudio",
     "sound360": "sound360",
     "seoro": "seoro",
@@ -10,7 +10,7 @@
   },
   "FooterNav": {
     "home": "Home",
-    "about": "Audioguy",
+    "about": "about",
     "audioguy": "AG Studio",
     "sound360": "Sound360",
     "seoro": "Seoro",
@@ -50,8 +50,8 @@
         "description": "レコーディングから空間音響制作まで、サウンドの完成度を設計します。"
       },
       "agstudio": {
-        "label": "AG Studio",
-        "description": "内容が必要です"
+        "label": "Audioguy Studio",
+        "description": "レコーディング、ミキシング、マスタリング、Dolby Atmos制作に最適化されたオーディオ制作スペースです。"
       },
       "sound360": {
         "label": "Sound 360",
@@ -120,8 +120,12 @@
       "subtitle": "空間音響AI制作エンジン",
       "name": "AI-SPHR",
       "description": "AI-SPHRは音源を分析し、空間音響構造へ変換し、グローバルプラットフォーム基準に合致する成果物として検査する、AUDIOGUY独自開発のエンジンです。",
-      "cardTitle": "データセットベースのディープラーニング",
-      "cardDesc": "6,000件の高品質データセットに基づくディープラーニングを実施"
+      "card1Title": "データセットベースのディープラーニング",
+      "card1Desc": "6,000件以上の高品質な音源データをもとに、空間音響変換モデルを学習しました。",
+      "card2Title": "空間構造の分析",
+      "card2Desc": "音源の周波数、楽器配置、残響特性を分析し、立体的なサウンド構造を設計します。",
+      "card3Title": "プラットフォーム最適化レンダリング",
+      "card3Desc": "Dolby AtmosやApple Musicなど、グローバルプラットフォームの基準に合わせた成果物に変換します。"
     },
     "people": {
       "label": "LEADERSHIP",
@@ -134,7 +138,9 @@
       "member3Name": "キム・ソイ",
       "member3Role": "ミュージックIP",
       "member4Name": "オ・デギュ",
-      "member4Role": "空間音響_KPOP"
+      "member4Role": "空間音響_KPOP",
+      "member5Name": "アン・ボムヒョン",
+      "member5Role": "エンジニア / ミキシング"
     },
     "proof": {
       "label": "PARTNERSHIP",
@@ -183,11 +189,15 @@
     "team1Name": "アン・ボムヒョン",
     "team1Role": "トーンマイスター",
     "team1Alt": "アン・ボムヒョン",
+    "team1Bullet1": "クラシック音楽の空間音響制作専門",
+    "team1Bullet2": "ニューヨークで活動",
+    "team1Bullet3": "David Chesky、American Composer Orchestra、NYO Orchestra 録音",
     "team2Name": "チャン・ヘジン",
     "team2Role": "エンジニア",
-    "team2Bullet1": "クラシック音楽の空間音響制作専門",
-    "team2Bullet2": "ニューヨークで活動",
-    "team2Bullet3": "David Chesky、American Composer Orchestra、NYO Orchestra 録音"
+    "team2Bullet1": "実用音楽専攻、サウンドエンジニアリング教育修了",
+    "team2Bullet2": "SRチームでの現場経験多数",
+    "team2Bullet3": "オーディオガイスタジオでの録音・ミキシング",
+    "team2Bullet4": "オーディオガイスタジオのプロジェクト管理"
   },
   "Sound360": {
     "label": "Dolby Atmos",
@@ -200,10 +210,14 @@
     "point3Title": "Dolby Atmos グローバルスタンダードスタジオ",
     "point3Sub": "音楽・XR空間音響を網羅するマルチフォーマットスタジオ",
     "workScope": "作業内容と範囲",
-    "service1": "Audio Mixing & Master",
-    "service2": "Podcast Recording & Mixing & Master",
-    "service3": "Concert 3D Audio Mixing & Mastering",
-    "service4": "Post Production",
+    "service1": "Mixing & Mastering",
+    "service1Desc": "音楽のバランスと質感を磨き上げ、完成度の高いサウンドに仕上げます。",
+    "service2": "Dolby Atmos",
+    "service2Desc": "空間感と没入感を加え、音楽のリスニング体験を拡張します。",
+    "service3": "Post Production",
+    "service3Desc": "映像やコンテンツに合うサウンドのポストプロダクションを仕上げます。",
+    "service4": "Facilities",
+    "service4Desc": "プロフェッショナルな音楽制作のための最適なスタジオ環境を提供します。",
     "studio": "STUDIO",
     "studioSubKr": "マルチフォーマットスタジオ",
     "studioTitle": "Dolby Atmos グローバルスタンダードスタジオ",
@@ -213,18 +227,18 @@
     "ourTeam": "OUR TEAM",
     "team1Name": "オ・デギュ",
     "team1Role": "室長",
-    "team2Name": "オ・ヨンテク",
-    "team2Role": "チームリーダー",
-    "team3Name": "チョン・スヒョン",
-    "team3Role": "エンジニア",
-    "team3Bullet1": "ソウル芸術大学 実用音楽 電子音楽 音響デザイン卒業",
-    "team3Bullet2": "2023 クラウンクラウン 全体投影 空間音響公演",
-    "team3Bullet3": "ザ・ハウスコンサート 統合ミキシング",
-    "team3Bullet4": "Yezzi - Time! 録音およびDolby Atmosミキシング",
-    "team3Bullet5": "Replica Dream - Vandalism アルバムミキシング",
-    "team3Bullet6": "OLOGI & HEIBE - Butterfly (feat. YUJIN KIM)",
-    "team3Bullet7": "「世の中に悪い象はいない」 録音",
-    "team3Bullet8": "デフン & ダミン - Love sickin' (feat. MINNA) アルバム録音"
+    "team1Bullet1": "MakeUs Dingo 元サウンドパート長（Dingo Music、DF 全ライブ・広告・バラエティ・ドラマコンテンツ担当）",
+    "team1Bullet2": "SOUND360 スタジオ 現室長",
+    "team2Name": "チョン・スヒョン",
+    "team2Role": "エンジニア",
+    "team2Bullet1": "ソウル芸術大学 実用音楽 電子音楽 音響デザイン卒業",
+    "team2Bullet2": "2023 果川国立科学館 天体投影室 空間音響公演",
+    "team2Bullet3": "ザ・ハウスコンサート Dolbyミキシング",
+    "team2Bullet4": "Yezzi - Time! 録音およびDolby Atmosミキシング",
+    "team2Bullet5": "Replica Dream - Vandalism アルバムミキシング",
+    "team2Bullet6": "OLOGI & HEIBE - Butterfly (feat. YUJIN KIM)",
+    "team2Bullet7": "「世の中に悪い虎はいない」 録音",
+    "team2Bullet8": "テフン & ダビッ - Love sickin' (feat. MINNA) アルバム録音"
   },
   "Seoro": {
     "label": "SEORO",

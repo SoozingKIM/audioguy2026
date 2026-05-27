@@ -1,7 +1,7 @@
 {
   "Nav": {
     "home": "home",
-    "about": "audioguy",
+    "about": "about",
     "audioguy": "AGstudio",
     "sound360": "sound360",
     "seoro": "seoro",
@@ -10,7 +10,7 @@
   },
   "FooterNav": {
     "home": "Home",
-    "about": "Audioguy",
+    "about": "about",
     "audioguy": "AG Studio",
     "sound360": "Sound360",
     "seoro": "Seoro",
@@ -50,8 +50,8 @@
         "description": "레코딩부터 공간음향 제작까지, 사운드의 완성도를 설계합니다."
       },
       "agstudio": {
-        "label": "AG Studio",
-        "description": "내용 필요"
+        "label": "Audioguy Studio",
+        "description": "레코딩, 믹싱, 마스터링, Dolby Atmos 제작에 최적화된 오디오 제작 공간입니다."
       },
       "sound360": {
         "label": "Sound 360",
@@ -120,8 +120,12 @@
       "subtitle": "공간음향 AI 제작 엔진",
       "name": "AI-SPHR",
       "description": "AI-SPHR은 음원을 분석하고, 공간음향 구조로 변환하며, 글로벌 플랫폼 기준에 맞는 결과물로 검수하는 AUDIOGUY의 자체 제작 엔진입니다.",
-      "cardTitle": "데이터셋 기반 딥러닝",
-      "cardDesc": "6,000건의 고품질 데이터셋 기반 딥러닝 수행"
+      "card1Title": "데이터셋 기반 딥러닝",
+      "card1Desc": "6,000건 이상의 고품질 음원 데이터를 기반으로 공간음향 변환 모델을 학습했습니다.",
+      "card2Title": "공간 구조 분석",
+      "card2Desc": "음원의 주파수, 악기 배치, 잔향 특성을 분석해 입체적인 사운드 구조를 설계합니다.",
+      "card3Title": "플랫폼 최적화 렌더링",
+      "card3Desc": "Dolby Atmos, Apple Music 등 글로벌 플랫폼 기준에 맞는 결과물로 변환합니다."
     },
     "people": {
       "label": "LEADERSHIP",
@@ -134,7 +138,9 @@
       "member3Name": "김소이",
       "member3Role": "뮤직 IP",
       "member4Name": "오대규",
-      "member4Role": "공간음향_KPOP"
+      "member4Role": "공간음향_KPOP",
+      "member5Name": "안범현",
+      "member5Role": "엔지니어 / 믹싱"
     },
     "proof": {
       "label": "PARTNERSHIP",
@@ -183,11 +189,15 @@
     "team1Name": "안범현",
     "team1Role": "톤마이스터",
     "team1Alt": "안범현",
+    "team1Bullet1": "Classical music 공간음향 제작 전문",
+    "team1Bullet2": "New York 활동",
+    "team1Bullet3": "David Chesky, American Composer Orchestra, NYO Orchestra 녹음",
     "team2Name": "장혜진",
     "team2Role": "엔지니어",
-    "team2Bullet1": "Classical music 공간음향 제작 전문",
-    "team2Bullet2": "New York 활동",
-    "team2Bullet3": "David Chesky, American Composer Orchestra, NYO Orchestra 녹음"
+    "team2Bullet1": "실용음악 전공 및 엔지니어링 교육 수료",
+    "team2Bullet2": "SR팀 현장 경험 다수",
+    "team2Bullet3": "오디오가이 스튜디오 녹음 및 믹싱",
+    "team2Bullet4": "오디오가이 스튜디오 프로젝트 관리"
   },
   "Sound360": {
     "label": "Dolby Atmos",
@@ -200,10 +210,14 @@
     "point3Title": "Dolby Atmos 글로벌 스탠다드 스튜디오",
     "point3Sub": "음악·XR 공간음향을 아우르는 멀티 포맷 스튜디오",
     "workScope": "작업 내용 및 범위",
-    "service1": "Audio Mixing & Master",
-    "service2": "Podcast Recording & Mixing & Master",
-    "service3": "Concert 3D Audio Mixing & Mastering",
-    "service4": "Post Production",
+    "service1": "Mixing & Mastering",
+    "service1Desc": "음악의 밸런스와 질감을 다듬어 완성도 높은 사운드로 완성합니다.",
+    "service2": "Dolby Atmos",
+    "service2Desc": "공간감과 몰입감을 더해 음악의 청취 경험을 확장합니다.",
+    "service3": "Post Production",
+    "service3Desc": "영상과 콘텐츠에 어울리는 사운드 후반 작업을 완성합니다.",
+    "service4": "Facilities",
+    "service4Desc": "전문적인 음악 제작을 위한 최적의 스튜디오 환경을 제공합니다.",
     "studio": "STUDIO",
     "studioSubKr": "멀티 포맷 스튜디오",
     "studioTitle": "Dolby Atmos 글로벌스탠다드스튜디오",
@@ -213,18 +227,18 @@
     "ourTeam": "OUR TEAM",
     "team1Name": "오대규",
     "team1Role": "실장",
-    "team2Name": "오영택",
-    "team2Role": "팀장",
-    "team3Name": "전수현",
-    "team3Role": "엔지니어",
-    "team3Bullet1": "서울예대 실용음악 전자음악 음향디자인 졸업",
-    "team3Bullet2": "2023 과천과학관 천체투영실 공간음향 공연",
-    "team3Bullet3": "더 하우스콘서트 돌비 믹싱",
-    "team3Bullet4": "Yezzi - Time! 녹음 및 돌비애트모스 믹싱",
-    "team3Bullet5": "Replica Dream - Vandalism 앨범 믹싱",
-    "team3Bullet6": "OLOGI & HEIBE - Butterfly (feat. YUJIN KIM)",
-    "team3Bullet7": "세상에 나쁜 호랑이는 없다 녹음",
-    "team3Bullet8": "태훈 & 다빛 - Love sickin’ (feat. MINNA) 앨범 녹음"
+    "team1Bullet1": "메이크어스 딩고 (전)사운드 파트장 (딩고 뮤직, DF 모든 라이브, 광고, 예능, 드라마 콘텐츠 담당)",
+    "team1Bullet2": "SOUND360 스튜디오 (현) 실장",
+    "team2Name": "전수현",
+    "team2Role": "엔지니어",
+    "team2Bullet1": "서울예대 실용음악 전자음악 음향디자인 졸업",
+    "team2Bullet2": "2023 과천과학관 천체투영실 공간음향 공연",
+    "team2Bullet3": "더 하우스콘서트 돌비 믹싱",
+    "team2Bullet4": "Yezzi - Time! 녹음 및 돌비애트모스 믹싱",
+    "team2Bullet5": "Replica Dream - Vandalism 앨범 믹싱",
+    "team2Bullet6": "OLOGI & HEIBE - Butterfly (feat. YUJIN KIM)",
+    "team2Bullet7": "세상에 나쁜 호랑이는 없다 녹음",
+    "team2Bullet8": "태훈 & 다빛 - Love sickin’ (feat. MINNA) 앨범 녹음"
   },
   "Seoro": {
     "label": "SEORO",

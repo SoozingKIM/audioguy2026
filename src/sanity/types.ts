@@ -13,6 +13,10 @@ export type ImageSlot = {
 
 export type PageImages = {
   hero: SanityImage | null;
+  /** Hero background video URL (Sanity file asset), or null if none uploaded. */
+  heroVideo: string | null;
+  /** Whether the hero video offers a sound toggle (admin opt-in). */
+  heroVideoSound: boolean;
   images: ImageSlot[];
 };
 
