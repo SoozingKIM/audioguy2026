@@ -13,7 +13,7 @@ import * as THREE from "three";
  */
 export function ParticleGalaxy({
   className,
-  particleCount = 100000,
+  particleCount = 50000,
 }: {
   className?: string;
   particleCount?: number;
@@ -43,7 +43,7 @@ export function ParticleGalaxy({
     };
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
     container.appendChild(renderer.domElement);
@@ -162,7 +162,7 @@ export function ParticleGalaxy({
         }
 
         vec3 getShapeColor(int shape, float id, vec3 rnd) {
-            if (shape == 0) return palette(id + uTime*0.05, vec3(0.40, 0.42, 0.50), vec3(0.04, 0.04, 0.06), vec3(1.0, 1.0, 1.0), vec3(0.55, 0.60, 0.72));
+            if (shape == 0) return palette(id + uTime*0.05, vec3(0.46, 0.50, 0.60), vec3(0.16, 0.15, 0.18), vec3(1.0, 1.0, 1.0), vec3(0.48, 0.60, 0.78));
             if (shape == 1) {
                 float h = (id - 0.5) * 60.0;
                 float rungZone = fract(h * 0.5);
@@ -193,8 +193,8 @@ export function ParticleGalaxy({
             float breatheMask = sin(uMorphProgress * PI);
             finalPos += normalize(finalPos) * breatheMask * 8.0;
 
-            float autoRot1 = (uCurrentShape == 2) ? 0.0 : uTime * 0.06;
-            float autoRot2 = (uTargetShape == 2) ? 0.0 : uTime * 0.06;
+            float autoRot1 = (uCurrentShape == 2) ? 0.0 : uTime * 0.08;
+            float autoRot2 = (uTargetShape == 2) ? 0.0 : uTime * 0.08;
             float rotY = mix(autoRot1, autoRot2, easedMorph) + uMouse.x * 0.8;
             float rotX = uMouse.y * 0.8;
 
@@ -211,7 +211,7 @@ export function ParticleGalaxy({
             finalPos = rotMatY * rotMatX * finalPos;
 
             vColor = mix(c1, c2, easedMorph);
-            vAlpha = 0.18 + 0.45 * sin(uTime * 5.0 + aId * PI * 20.0);
+            vAlpha = 0.28 + 0.6 * sin(uTime * 5.0 + aId * PI * 20.0);
 
             vec4 mvPosition = modelViewMatrix * vec4(finalPos, 1.0);
             gl_Position = projectionMatrix * mvPosition;
