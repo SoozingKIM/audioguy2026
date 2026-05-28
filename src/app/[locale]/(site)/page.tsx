@@ -51,20 +51,7 @@ export default async function HomePage({
           aria-hidden
           className="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-1/2 items-center justify-center md:flex"
         >
-          <div className="pointer-events-auto relative aspect-square w-[min(78%,520px)]">
-            {/* Circular halo hugging the sphere — `closest-side` keeps the dark
-                falloff a true circle (corners fully transparent) and rounded-full
-                clips the box to a circle, so no square edge shows behind it.
-                Colour is a deep blue (indigo with extra blue weight) tuned to
-                the hero aurora / brand palette rather than flat black. */}
-            <div
-              className="absolute inset-[-18%] rounded-full"
-              style={{
-                background:
-                  "radial-gradient(circle closest-side at 50% 50%, rgba(26,52,124,0.92) 0%, rgba(26,52,124,0.86) 20%, rgba(26,52,124,0.68) 38%, rgba(26,52,124,0.46) 54%, rgba(26,52,124,0.27) 69%, rgba(26,52,124,0.12) 83%, rgba(26,52,124,0.04) 93%, rgba(26,52,124,0) 100%)",
-                filter: "blur(8px)",
-              }}
-            />
+          <div className="pointer-events-auto relative aspect-square w-[min(78%,520px)] translate-x-[200px] scale-[1.3]">
             <ParticleGalaxy className="absolute inset-0" />
           </div>
         </div>

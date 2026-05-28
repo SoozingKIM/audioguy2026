@@ -1,7 +1,7 @@
-"use client";
+'use client';
 
-import { useEffect, useRef } from "react";
-import * as THREE from "three";
+import { useEffect, useRef } from 'react';
+import * as THREE from 'three';
 
 /**
  * GLSL particle "galaxy" that morphs between an astrolabe ring, a DNA helix
@@ -13,7 +13,7 @@ import * as THREE from "three";
  */
 export function ParticleGalaxy({
   className,
-  particleCount = 50000,
+  particleCount = 70000,
 }: {
   className?: string;
   particleCount?: number;
@@ -43,11 +43,11 @@ export function ParticleGalaxy({
     };
 
     const renderer = new THREE.WebGLRenderer({ antialias: true, alpha: true });
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.5));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2.0));
     renderer.toneMapping = THREE.ACESFilmicToneMapping;
     renderer.toneMappingExposure = 1.0;
     container.appendChild(renderer.domElement);
-    renderer.domElement.style.display = "block";
+    renderer.domElement.style.display = 'block';
 
     const applySize = () => {
       const { w, h } = size();
@@ -55,8 +55,8 @@ export function ParticleGalaxy({
       camera.updateProjectionMatrix();
       updateCameraZ();
       renderer.setSize(w, h, false);
-      renderer.domElement.style.width = "100%";
-      renderer.domElement.style.height = "100%";
+      renderer.domElement.style.width = '100%';
+      renderer.domElement.style.height = '100%';
     };
 
     const geometry = new THREE.BufferGeometry();
@@ -69,9 +69,9 @@ export function ParticleGalaxy({
       randoms[i * 3 + 1] = Math.random();
       randoms[i * 3 + 2] = Math.random();
     }
-    geometry.setAttribute("position", new THREE.BufferAttribute(positions, 3));
-    geometry.setAttribute("aId", new THREE.BufferAttribute(ids, 1));
-    geometry.setAttribute("aRandom", new THREE.BufferAttribute(randoms, 3));
+    geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
+    geometry.setAttribute('aId', new THREE.BufferAttribute(ids, 1));
+    geometry.setAttribute('aRandom', new THREE.BufferAttribute(randoms, 3));
 
     const material = new THREE.ShaderMaterial({
       uniforms: {
@@ -112,10 +112,14 @@ export function ParticleGalaxy({
                 float noiseRadius = rnd.z * 1.5;
                 pos += vec3(cos(noiseAngle), sin(noiseAngle), cos(noiseAngle)) * noiseRadius;
             } else {
+                // Thin ring stroke — collapse particles onto a clean circle
+                // (no radial noise, y=0) so the band reads as a luminous LINE
+                // rather than scattered dots. The brightness/size streak is
+                // animated per-particle in main() for the galaxy-arm feel.
                 float ringIdx = floor(rnd.y * 3.0);
                 float angle = id * PI * 2.0 * 1000.0 + uTime * 0.2 * (ringIdx > 1.0 ? -1.0 : 1.0);
-                float r = 24.0 + ringIdx * 4.0 + (rnd.z * 0.5);
-                pos = vec3(r * cos(angle), (rnd.x - 0.15) * 2.0, r * sin(angle));
+                float r = 24.0 + ringIdx * 4.0;
+                pos = vec3(r * cos(angle), 0.0, r * sin(angle));
                 float tilt = 0.5 + ringIdx * 0.8;
                 float rotX = cos(tilt); float rotY = sin(tilt);
                 pos.yz = mat2(rotX, -rotY, rotY, rotX) * pos.yz;
@@ -162,7 +166,24 @@ export function ParticleGalaxy({
         }
 
         vec3 getShapeColor(int shape, float id, vec3 rnd) {
-            if (shape == 0) return palette(id + uTime*0.05, vec3(0.46, 0.50, 0.60), vec3(0.16, 0.15, 0.18), vec3(1.0, 1.0, 1.0), vec3(0.48, 0.60, 0.78));
+            if (shape == 0) {
+                if (rnd.x <= 0.3) {
+                    // Outer 3 rings — solid navy band.
+                    return vec3(0.12, 0.18, 0.44);
+                }
+                // Inner helical — brand colour ramp taken from /home/cta-glow.svg
+                // (#0E58F8 vivid blue → #6092FF medium blue → #7A33F3 purple →
+                // #CDB1FF light lavender). rnd.y picks each particle's position
+                // along the ramp so they smoothly span all four brand hues.
+                vec3 brandA = vec3(0.055, 0.345, 0.973);
+                vec3 brandB = vec3(0.376, 0.573, 1.000);
+                vec3 brandC = vec3(0.478, 0.200, 0.953);
+                vec3 brandD = vec3(0.804, 0.694, 1.000);
+                float t = rnd.y * 3.0;
+                if (t < 1.0) return mix(brandA, brandB, t);
+                if (t < 2.0) return mix(brandB, brandC, t - 1.0);
+                return mix(brandC, brandD, t - 2.0);
+            }
             if (shape == 1) {
                 float h = (id - 0.5) * 60.0;
                 float rungZone = fract(h * 0.5);
@@ -193,8 +214,8 @@ export function ParticleGalaxy({
             float breatheMask = sin(uMorphProgress * PI);
             finalPos += normalize(finalPos) * breatheMask * 8.0;
 
-            float autoRot1 = (uCurrentShape == 2) ? 0.0 : uTime * 0.08;
-            float autoRot2 = (uTargetShape == 2) ? 0.0 : uTime * 0.08;
+            float autoRot1 = (uCurrentShape == 2) ? 0.0 : uTime * 0.06;
+            float autoRot2 = (uTargetShape == 2) ? 0.0 : uTime * 0.06;
             float rotY = mix(autoRot1, autoRot2, easedMorph) + uMouse.x * 0.8;
             float rotX = uMouse.y * 0.8;
 
@@ -212,6 +233,14 @@ export function ParticleGalaxy({
 
             vColor = mix(c1, c2, easedMorph);
             vAlpha = 0.28 + 0.6 * sin(uTime * 5.0 + aId * PI * 20.0);
+
+            // Ring particles (shape-0, aRandom.x <= 0.3) are HIDDEN here — the
+            // 3 outer rings are rendered as actual TorusGeometry meshes (true
+            // continuous lines) outside the points system, with their own
+            // shader doing the traveling streak.
+            if (uCurrentShape == 0 && aRandom.x <= 0.3) {
+                vAlpha = 0.0;
+            }
 
             vec4 mvPosition = modelViewMatrix * vec4(finalPos, 1.0);
             gl_Position = projectionMatrix * mvPosition;
@@ -232,15 +261,107 @@ export function ParticleGalaxy({
       `,
       transparent: true,
       depthWrite: false,
-      blending: THREE.AdditiveBlending,
+      blending: THREE.NormalBlending,
     });
 
     const particles = new THREE.Points(geometry, material);
+    particles.scale.setScalar(1.5);
     scene.add(particles);
+
+    // DISABLED (kept for later restoration): 3 outer navy streak rings. To
+    // restore, uncomment this block + the ringMeshes update in animate + the
+    // dispose in cleanup. Behaviour: true line strokes (TorusGeometry) with a
+    // traveling brightness/alpha wave around each ring (4 luminous arcs).
+    /*
+    const ringMeshes: THREE.Mesh[] = [];
+    const ringVertex = `
+      uniform float uTime;
+      uniform float uRingIdx;
+      uniform vec2 uMouse;
+      varying float vU;
+      void main() {
+        vU = uv.x;
+        vec3 p = position;
+        float tilt = 0.5 + uRingIdx * 0.8;
+        float ct = cos(tilt); float st = sin(tilt);
+        p.yz = mat2(ct, -st, st, ct) * p.yz;
+        p.xy = mat2(ct, -st, st, ct) * p.xy;
+        float autoRot = uTime * 0.06;
+        float rotY = autoRot + uMouse.x * 0.8;
+        float rotX = uMouse.y * 0.8;
+        mat3 rotMatY = mat3(
+          cos(rotY), 0.0, sin(rotY),
+          0.0, 1.0, 0.0,
+          -sin(rotY), 0.0, cos(rotY)
+        );
+        mat3 rotMatX = mat3(
+          1.0, 0.0, 0.0,
+          0.0, cos(rotX), -sin(rotX),
+          0.0, sin(rotX), cos(rotX)
+        );
+        p = rotMatY * rotMatX * p;
+        p *= 0.85; // match getAstrolabe's overall scale
+        gl_Position = projectionMatrix * modelViewMatrix * vec4(p, 1.0);
+      }
+    `;
+    const ringFragment = `
+      uniform float uTime;
+      uniform float uRingIdx;
+      varying float vU;
+      #define PI 3.14159265359
+      void main() {
+        float spinDir = (uRingIdx > 1.0) ? -1.0 : 1.0;
+        // 4 luminous arcs flowing around the ring (~0.6 rad/s).
+        float wave = 0.5 + 0.5 * sin(vU * PI * 2.0 * 4.0 - uTime * 2.5 * spinDir);
+        float alpha = 0.35 + 0.9 * wave;
+        vec3 navy = vec3(0.12, 0.18, 0.44);
+        gl_FragColor = vec4(navy * (0.55 + 0.8 * wave), alpha);
+      }
+    `;
+    for (let i = 0; i < 3; i++) {
+      const radius = 24.0 + i * 4.0;
+      const torusGeom = new THREE.TorusGeometry(radius, 0.25, 8, 256);
+      // Default torus lies in XY plane (Z axis). Flip to XZ plane to match the
+      // astrolabe ring initial orientation before the tilt rotation in shader.
+      torusGeom.rotateX(Math.PI / 2);
+      const ringMat = new THREE.ShaderMaterial({
+        uniforms: {
+          uTime: { value: 0 },
+          uRingIdx: { value: i },
+          uMouse: { value: new THREE.Vector2(0, 0) },
+        },
+        vertexShader: ringVertex,
+        fragmentShader: ringFragment,
+        transparent: true,
+        depthWrite: false,
+        blending: THREE.NormalBlending,
+      });
+      const ring = new THREE.Mesh(torusGeom, ringMat);
+      scene.add(ring);
+      ringMeshes.push(ring);
+    }
+    */
+
+    // Glass-sphere wrapper — a faint white wireframe sphere enclosing the
+    // navy streak rings, suggesting a slightly translucent glass container
+    // around the whole composition. Radius is sized just past the outermost
+    // ring (32), then scaled by the same 0.85 the astrolabe uses.
+    const glassSphere = new THREE.Mesh(
+      new THREE.SphereGeometry(36, 18, 12),
+      new THREE.MeshBasicMaterial({
+        color: 0xc7d0e0,
+        wireframe: true,
+        transparent: true,
+        opacity: 0.18,
+        depthWrite: false,
+      }),
+    );
+    glassSphere.scale.setScalar(0.85);
+    scene.add(glassSphere);
 
     let morphProgress = 0;
     let currentShape = 0;
-    let targetShape = 0;
+    const targetShape = 0;
     let isTransitioning = false;
     // const TOTAL_SHAPES = 3; // click-to-morph disabled (see triggerMorph below)
 
@@ -263,7 +384,7 @@ export function ParticleGalaxy({
     //   }
     // };
     // Scope input to the container so it never hijacks page clicks/scroll.
-    container.addEventListener("pointermove", onPointerMove);
+    container.addEventListener('pointermove', onPointerMove);
     // container.addEventListener("click", triggerMorph);
 
     const ro = new ResizeObserver(applySize);
@@ -295,6 +416,23 @@ export function ParticleGalaxy({
       material.uniforms.uTargetShape.value = targetShape;
       material.uniforms.uMouse.value.copy(mouse);
 
+      // DISABLED: ring mesh sync (see comment by ring creation above).
+      /*
+      const ringsActive = currentShape === 0 && targetShape === 0;
+      for (const ring of ringMeshes) {
+        ring.visible = ringsActive;
+        const m = ring.material as THREE.ShaderMaterial;
+        m.uniforms.uTime.value = elapsedTime;
+        m.uniforms.uMouse.value.copy(mouse);
+      }
+      */
+      // Glass sphere wrapper rotates with the same auto-spin + mouse tilt as
+      // the points, so it reads as one coordinated assembly. Visible only on
+      // shape 0 (currently always, since click-to-morph is disabled).
+      glassSphere.visible = currentShape === 0 && targetShape === 0;
+      glassSphere.rotation.y = elapsedTime * 0.01 + mouse.x * 0.8;
+      glassSphere.rotation.x = mouse.y * 0.8;
+
       renderer.render(scene, camera);
     };
     animate();
@@ -308,16 +446,25 @@ export function ParticleGalaxy({
         animate();
       }
     };
-    document.addEventListener("visibilitychange", onVisibility);
+    document.addEventListener('visibilitychange', onVisibility);
 
     return () => {
       cancelAnimationFrame(raf);
-      document.removeEventListener("visibilitychange", onVisibility);
-      container.removeEventListener("pointermove", onPointerMove);
+      document.removeEventListener('visibilitychange', onVisibility);
+      container.removeEventListener('pointermove', onPointerMove);
       // container.removeEventListener("click", triggerMorph);
       ro.disconnect();
       geometry.dispose();
       material.dispose();
+      // DISABLED: ring mesh dispose (see comment by ring creation).
+      /*
+      for (const ring of ringMeshes) {
+        ring.geometry.dispose();
+        (ring.material as THREE.ShaderMaterial).dispose();
+      }
+      */
+      glassSphere.geometry.dispose();
+      (glassSphere.material as THREE.MeshBasicMaterial).dispose();
       renderer.dispose();
       if (renderer.domElement.parentNode === container) {
         container.removeChild(renderer.domElement);

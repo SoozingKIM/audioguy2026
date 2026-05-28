@@ -55,7 +55,7 @@ export function FloatingContact() {
               d="M50,50 m-37,0 a37,37 0 1,1 74,0 a37,37 0 1,1 -74,0"
             />
           </defs>
-          <text className="fill-white text-[10px] font-semibold uppercase">
+          <text className="fill-[#a5b4fc] text-[10px] font-semibold uppercase">
             <textPath
               href="#fc-ring"
               startOffset="0"
@@ -66,7 +66,7 @@ export function FloatingContact() {
             </textPath>
           </text>
         </svg>
-        <span className="flex size-10 items-center justify-center rounded-full bg-white text-secondary">
+        <span className="flex size-10 items-center justify-center rounded-full bg-[#1a1f4d] text-[#a5b4fc]">
           <ArrowIcon />
         </span>
       </Link>
@@ -75,12 +75,12 @@ export function FloatingContact() {
       <Link
         href="/contact"
         aria-label={label}
-        className="pointer-events-none absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-3 whitespace-nowrap rounded-full bg-secondary py-2 pl-6 pr-2 text-white opacity-0 shadow-lg backdrop-blur-[10px] transition-opacity duration-300 group-hover:pointer-events-auto group-hover:opacity-100"
+        className="pointer-events-none absolute right-0 top-1/2 flex -translate-y-1/2 items-center gap-3 whitespace-nowrap rounded-full bg-secondary py-2 pl-6 pr-2 text-[#c7d2fe] opacity-0 shadow-lg backdrop-blur-[10px] transition-opacity duration-300 group-hover:pointer-events-auto group-hover:opacity-100"
       >
         <span className="text-base font-semibold tracking-[-0.16px]">
           {label}
         </span>
-        <span className="flex size-10 items-center justify-center rounded-full bg-white text-secondary">
+        <span className="flex size-10 items-center justify-center rounded-full bg-[#1a1f4d] text-[#a5b4fc]">
           <ArrowIcon />
         </span>
       </Link>
