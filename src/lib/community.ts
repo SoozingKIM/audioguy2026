@@ -156,12 +156,76 @@ function parseListing(
   return posts;
 }
 
+// Preferred data source — a tiny JSON endpoint that we host on the gnuboard
+// server itself (Cafe24). Same-server DB query, no cross-origin blocking, no
+// HTML scraping. The fetcher below tries this first; if it isn't deployed yet
+// (or fails) we fall back to scraping the public listing HTML.
+const JSON_API_URL = `${BASE}/recent.php`;
+
+type JsonApiPost = {
+  id?: string | number;
+  title?: string;
+  url?: string;
+  date?: string | null;
+};
+
+async function tryJsonEndpoint(
+  slug: string,
+  limit: number,
+): Promise<CommunityPost[] | null> {
+  const url = `${JSON_API_URL}?board=${encodeURIComponent(slug)}&limit=${limit}`;
+  try {
+    const res = await fetch(url, {
+      headers: { Accept: "application/json" },
+      next: { revalidate: 1800 },
+    });
+    if (!res.ok) {
+      // 404 here means the PHP file hasn't been uploaded yet — quietly fall
+      // through to the HTML scraper. Other errors get logged.
+      if (res.status !== 404) {
+        console.error(
+          `[community] ${slug}: JSON endpoint HTTP ${res.status} ${res.statusText}`,
+        );
+      }
+      return null;
+    }
+    const data = (await res.json()) as JsonApiPost[];
+    if (!Array.isArray(data)) return null;
+    return data
+      .filter((p): p is JsonApiPost & { id: string | number; title: string; url: string } =>
+        p != null && (typeof p.id === "string" || typeof p.id === "number") &&
+        typeof p.title === "string" && typeof p.url === "string",
+      )
+      .map((p) => ({
+        id: String(p.id),
+        title: p.title,
+        url: p.url,
+        date: typeof p.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(p.date)
+          ? p.date
+          : null,
+      }));
+  } catch (err) {
+    console.error(
+      `[community] ${slug}: JSON endpoint fetch threw`,
+      err instanceof Error ? `${err.name}: ${err.message}` : String(err),
+    );
+    return null;
+  }
+}
+
 export async function getCommunityBoardPosts(
   boardKey: CommunityBoardKey,
   limit = 5,
 ): Promise<CommunityPost[]> {
   const url = communityBoardUrl(boardKey);
   const slug = COMMUNITY_BOARDS[boardKey].slug;
+
+  // 1) Preferred: JSON endpoint (same-server, accurate, fast).
+  const fromJson = await tryJsonEndpoint(slug, limit);
+  if (fromJson && fromJson.length > 0) return fromJson;
+
+  // 2) Fallback: scrape the public HTML listing (works locally / from any
+  //    network that isn't IP-blocked by Cafe24's WAF).
 
   let html: string;
   try {
