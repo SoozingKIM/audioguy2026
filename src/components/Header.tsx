@@ -2,6 +2,7 @@ import { getTranslations } from 'next-intl/server';
 
 import { BrandLogo } from '@/components/BrandLogo';
 import { LangSwitcher } from '@/components/LangSwitcher';
+import { MobileMenu } from '@/components/MobileMenu';
 import { Link } from '@/i18n/navigation';
 
 const NAV_KEYS = [
@@ -38,15 +39,12 @@ export async function Header({ siteName }: { siteName?: string }) {
 
           <LangSwitcher />
 
-          <button
-            type="button"
-            aria-label="메뉴 열기"
-            className="flex h-5 w-6 flex-col justify-between md:hidden"
-          >
-            <span className="h-px w-full bg-foreground" />
-            <span className="h-px w-full bg-foreground" />
-            <span className="h-px w-full bg-foreground" />
-          </button>
+          <MobileMenu
+            items={NAV_KEYS.map((item) => ({
+              href: item.href,
+              label: t(item.key),
+            }))}
+          />
         </div>
       </div>
     </header>

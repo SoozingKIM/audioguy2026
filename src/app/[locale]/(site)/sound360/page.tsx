@@ -28,9 +28,11 @@ const SERVICES = [
   { key: "service4", fg: null, fgSize: 0, fgOpacity: 1 },
 ] as const;
 
-// Studio image carousel — each slide shows the local fallback by default and can
-// be overridden per-slot in Sanity (sound360Page → "Studio · 캐러셀").
-const STUDIO_SLIDES: StudioSlide[] = [
+// Studio carousel slides are built at request time from
+// `sound360Page.studioImages[]` in Sanity (admin can add/remove freely; the
+// carousel + indicator bar auto-adapt to the count). The local /public
+// fallback list below is used only when Sanity has no entries yet.
+const STUDIO_FALLBACK: StudioSlide[] = [
   { slotKey: "studio", fallbackSrc: "/sound360/studio.jpg" },
   { slotKey: "studio-2", fallbackSrc: "/sound360/studio-2.jpg" },
   { slotKey: "studio-3", fallbackSrc: "/sound360/studio-3.jpg" },
@@ -51,6 +53,20 @@ export default async function Sound360Page({
   const cx = contentResolver(c, locale, t);
   const { images, heroVideo, heroVideoSound } =
     await getPageImages("sound360Page");
+
+  // Studio carousel: pull the ordered list of slot keys from Sanity. Admin can
+  // add/remove entries in `sound360Page → Studio · 캐러셀`; each entry is one
+  // slide. Falls back to the local files when Sanity has nothing yet.
+  const studioCarouselKeys = await sanityFetch<{ key: string }[]>({
+    query: `*[_type=="sound360Page"][0].studioImages[]{key}`,
+    tags: ["sound360Page"],
+  }).catch(() => [] as { key: string }[]);
+  const studioSlides: StudioSlide[] =
+    studioCarouselKeys.length > 0
+      ? studioCarouselKeys
+          .filter((e) => !!e?.key)
+          .map((e) => ({ slotKey: e.key }))
+      : STUDIO_FALLBACK;
 
   // Discography preview: the 5 most recently added sound360 entries
   // (brandRecentDiscographyQuery orders by _createdAt desc).
@@ -229,7 +245,7 @@ export default async function Sound360Page({
           </div>
 
           <StudioCarousel
-            slides={STUDIO_SLIDES}
+            slides={studioSlides}
             slots={images}
             alt={cx("studioTitle")}
             imageNeeded={tCommon("imageNeeded")}

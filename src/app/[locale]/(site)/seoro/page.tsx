@@ -7,8 +7,12 @@ import { RevealCards } from "@/components/RevealCards";
 import { SettlementTabs } from "@/components/SettlementTabs";
 // 임시 숨김: discography "더보기" 버튼 주석 처리로 Link 미사용 (복구 시 주석 해제)
 // import { Link } from "@/i18n/navigation";
+import Image from "next/image";
 import { contentResolver, getPageContent } from "@/lib/pageContent";
-import { getPageImages } from "@/lib/pageImages";
+import { getPageImages, imageUrl } from "@/lib/pageImages";
+import { sanityFetch } from "@/sanity/lib/fetch";
+import { brandRecentDiscographyQuery } from "@/sanity/lib/queries";
+import type { DiscographyEntry } from "@/sanity/types";
 
 // DSP delivery destinations per region (illustrative). Keyed to the tab labels
 // 한국 / 일본 / 글로벌 / 몰입형. Each brand's logo is a Sanity image slot
@@ -55,34 +59,6 @@ const SETTLE_TAB_KEYS = [
   "settleTab4",
 ] as const;
 
-const DISCOGRAPHY = [
-  {
-    title: "BTS - Yet To Come in BUSAN",
-    artist: "HYBE",
-    cover: "linear-gradient(135deg, #4a5d3f 0%, #2a3825 100%)",
-  },
-  {
-    title: "BLACK PINK - THE SHOW",
-    artist: "YG ENTERTAINMENT",
-    cover: "linear-gradient(135deg, #d8b8c8 0%, #8b5a72 100%)",
-  },
-  {
-    title: "aespa - Girls",
-    artist: "SM ENT.",
-    cover: "linear-gradient(135deg, #2a3a55 0%, #1a1f30 100%)",
-  },
-  {
-    title: "TWICE - Talk that Talk",
-    artist: "JYPE",
-    cover: "linear-gradient(135deg, #f5c870 0%, #e08850 100%)",
-  },
-  {
-    title: "PSY - 식다양",
-    artist: "P NATION",
-    cover: "linear-gradient(135deg, #4a3a55 0%, #2a1a30 100%)",
-  },
-];
-
 function SectionHeader({
   title,
   caption,
@@ -126,6 +102,14 @@ export default async function SeoroPage({
   const c = await getPageContent("seoroPage");
   const cx = contentResolver(c, locale, t);
   const { images } = await getPageImages("seoroPage");
+
+  // Discography preview: the 5 most recently added seoro-brand entries.
+  // Managed in Sanity Studio (Discography Entry docs, brand="seoro").
+  const discography = await sanityFetch<DiscographyEntry[]>({
+    query: brandRecentDiscographyQuery,
+    params: { brand: "seoro", limit: 5 },
+    tags: ["discographyEntry", "brand:seoro"],
+  }).catch(() => []);
 
   const dspTabs = DSP_TAB_KEYS.map((key, i) => ({
     label: cx(key),
@@ -277,8 +261,8 @@ export default async function SeoroPage({
         />
       </section>
 
-      {/* DISCOGRAPHY — 임시 숨김 (복구하려면 아래 `{false && (` 와 짝 `)}` 래퍼를 제거) */}
-      {false && (
+      {/* DISCOGRAPHY — brand "seoro" entries from Sanity (managed in Studio
+          → Discography Entry, filtered to brand=seoro, 5 most recent). */}
       <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx("discography")}
@@ -297,30 +281,34 @@ export default async function SeoroPage({
           */}
         </div>
         <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {DISCOGRAPHY.map((d) => (
-            <div key={d.title} className="flex flex-col gap-3">
-              <div
-                className="h-[200px] md:h-[260px]"
-                style={{ background: d.cover }}
-              />
-              <div className="flex flex-col gap-0.5">
-                <div className="text-[15px] font-medium leading-[1.5] tracking-[-0.18px] text-foreground md:text-[18px]">
-                  {d.title}
+          {discography.map((entry) => {
+            const cover = imageUrl(entry.cover, 600, 600);
+            return (
+              <div key={entry._id} className="flex flex-col gap-3">
+                <div className="relative aspect-square overflow-hidden bg-background-white">
+                  {cover ? (
+                    <Image
+                      src={cover}
+                      alt={entry.cover?.alt ?? entry.title}
+                      fill
+                      sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+                      className="object-cover"
+                    />
+                  ) : null}
                 </div>
-                <div className="text-[13px] tracking-[-0.13px] text-tertiary">
-                  {d.artist}
+                <div className="flex flex-col gap-0.5">
+                  <div className="text-[15px] font-medium leading-[1.5] tracking-[-0.18px] text-foreground md:text-[18px]">
+                    {entry.title}
+                  </div>
+                  <div className="text-[13px] tracking-[-0.13px] text-tertiary">
+                    {entry.artist}
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
-        </div>
-        <div className="mt-8 flex items-center justify-center gap-2">
-          <span className="h-1.5 w-1.5 rounded-full bg-foreground/20" />
-          <span className="h-1.5 w-1.5 rounded-full bg-foreground" />
-          <span className="h-1.5 w-1.5 rounded-full bg-foreground/20" />
+            );
+          })}
         </div>
       </section>
-      )}
 
       <ContactCta />
     </>

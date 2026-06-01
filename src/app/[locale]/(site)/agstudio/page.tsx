@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { ContactCta } from "@/components/ContactCta";
@@ -11,9 +12,10 @@ import { TeamGrid, type TeamMember } from "@/components/TeamGrid";
 // 임시 숨김: discography "더보기" 버튼 주석 처리로 Link 미사용 (복구 시 주석 해제)
 // import { Link } from "@/i18n/navigation";
 import { contentResolver, getPageContent } from "@/lib/pageContent";
-import { getPageImages } from "@/lib/pageImages";
-
-const DISCOGRAPHY_PLACEHOLDERS = Array.from({ length: 5 });
+import { getPageImages, imageUrl } from "@/lib/pageImages";
+import { sanityFetch } from "@/sanity/lib/fetch";
+import { brandRecentDiscographyQuery } from "@/sanity/lib/queries";
+import type { DiscographyEntry } from "@/sanity/types";
 
 export default async function AudioguyPage({
   params,
@@ -28,6 +30,14 @@ export default async function AudioguyPage({
   const c = await getPageContent("audioguyPage");
   const cx = contentResolver(c, locale, t);
   const { images } = await getPageImages("audioguyPage");
+
+  // Discography preview: the 5 most recently added audioguy-brand entries.
+  // Managed in Sanity Studio (Discography Entry docs, brand="audioguy").
+  const discography = await sanityFetch<DiscographyEntry[]>({
+    query: brandRecentDiscographyQuery,
+    params: { brand: "audioguy", limit: 5 },
+    tags: ["discographyEntry", "brand:audioguy"],
+  }).catch(() => []);
 
   const services: ServiceItem[] = [
     {
@@ -155,45 +165,53 @@ export default async function AudioguyPage({
         </div>
       </section>
 
-      {/* DISCOGRAPHY — 최근 실황 작업 / 선별한 발매 앨범 as separate rows */}
+      {/* DISCOGRAPHY — brand "audioguy" entries from Sanity (managed in Studio
+          → Discography Entry, filtered to brand=audioguy, 5 most recent). */}
       <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx("discography")}
         </h2>
-        {[cx("recentWork"), cx("selectedAlbums")].map((rowLabel) => (
-          <div key={rowLabel} className="mt-10">
-            <div className="flex items-center justify-between">
-              <span className="text-[15px] font-medium tracking-[-0.18px] text-foreground md:text-[18px]">
-                {rowLabel}
-              </span>
-              {/* 임시 숨김: discography "더보기" 버튼 (복구하려면 주석 해제 + 상단 Link import 복구)
-              <Link
-                href="/discography?brand=audioguy"
-                className="text-[15px] font-medium tracking-[-0.15px] text-tertiary underline-offset-4 hover:text-foreground hover:underline"
-              >
-                {tCommon("viewMore")}
-              </Link>
-              */}
-            </div>
-            <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
-              {DISCOGRAPHY_PLACEHOLDERS.map((_, i) => (
-                <div key={i}>
-                  <div className="flex aspect-square items-center justify-center bg-foreground/3">
-                    <span className="text-sm font-semibold text-red-500">
-                      {tCommon("imageNeeded")}
-                    </span>
+        <div className="mt-10 flex items-center justify-between">
+          <p className="text-[15px] font-medium tracking-[-0.18px] text-foreground md:text-[18px]">
+            {cx("selectedAlbums")}
+          </p>
+          {/* 임시 숨김: discography "더보기" 버튼 (복구하려면 주석 해제 + 상단 Link import 복구)
+          <Link
+            href="/discography?brand=audioguy"
+            className="text-[15px] font-medium tracking-[-0.15px] text-tertiary underline-offset-4 hover:text-foreground hover:underline"
+          >
+            {tCommon("viewMore")}
+          </Link>
+          */}
+        </div>
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
+          {discography.map((entry) => {
+            const cover = imageUrl(entry.cover, 600, 600);
+            return (
+              <div key={entry._id} className="flex flex-col gap-3">
+                <div className="relative aspect-square overflow-hidden bg-background-white">
+                  {cover ? (
+                    <Image
+                      src={cover}
+                      alt={entry.cover?.alt ?? entry.title}
+                      fill
+                      sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+                      className="object-cover"
+                    />
+                  ) : null}
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <div className="text-[15px] font-medium leading-[1.5] tracking-[-0.18px] text-foreground md:text-[18px]">
+                    {entry.title}
                   </div>
-                  <div className="mt-3 text-sm font-semibold text-red-500">
-                    {tCommon("contentNeeded")}
-                  </div>
-                  <div className="text-xs text-red-500/80">
-                    {tCommon("contentNeeded")}
+                  <div className="text-[13px] tracking-[-0.13px] text-tertiary">
+                    {entry.artist}
                   </div>
                 </div>
-              ))}
-            </div>
-          </div>
-        ))}
+              </div>
+            );
+          })}
+        </div>
       </section>
 
       {/* OUR TEAM (Figma Frame 206) */}

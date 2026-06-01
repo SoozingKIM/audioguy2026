@@ -1,9 +1,11 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { AuroraBackground } from "@/components/AuroraBackground";
+import { CommunityPreview } from "@/components/CommunityPreview";
 import { ContactCta } from "@/components/ContactCta";
 import { ParticleGalaxy } from "@/components/ParticleGalaxy";
 import { RevealCards } from "@/components/RevealCards";
+import { SectionReveal } from "@/components/SectionReveal";
 import { Link } from "@/i18n/navigation";
 import { getPageContent, localized } from "@/lib/pageContent";
 
@@ -115,7 +117,10 @@ export default async function HomePage({
       </section>
 
       {/* Brand Overview */}
-      <section className="mx-auto max-w-[1440px] px-10 py-20 text-center">
+      <section
+        data-reveal
+        className="mx-auto max-w-[1440px] px-10 py-20 text-center"
+      >
         <p className="text-[16px] font-medium tracking-[-0.16px] text-tertiary">
           {cx("overviewLabel", "overview.label")}
         </p>
@@ -132,7 +137,9 @@ export default async function HomePage({
 
       {/* Contact CTA — full-bleed background, content aligned inside (other
           pages use this same component). */}
+      <CommunityPreview />
       <ContactCta />
+      <SectionReveal />
     </>
   );
 }

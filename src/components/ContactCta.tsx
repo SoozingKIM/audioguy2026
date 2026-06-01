@@ -31,7 +31,7 @@ export async function ContactCta() {
             className="group inline-flex items-center gap-5 whitespace-nowrap text-[24px] font-semibold tracking-[-0.24px] text-black"
           >
             {t("contactUs")}
-            <span className="flex size-[66px] items-center justify-center rounded-full bg-white text-black shadow-sm transition group-hover:translate-x-1">
+            <span className="flex size-[66px] items-center justify-center rounded-full bg-white text-black shadow-sm transition-all duration-500 ease-out group-hover:translate-x-1 group-hover:bg-[#0E58F8] group-hover:text-white">
               <svg
                 width="22"
                 height="22"

@@ -250,7 +250,7 @@ export const PAGE_SINGLETONS: PageSingletonConfig[] = [
     title: "Sound360",
     contentFields: contentFields(sound360ContentPaths, sound360ContentMulti),
     imageSections: [
-      { name: "studioImages", title: "Studio · 캐러셀 (key: studio, studio-2, studio-3, studio-4)" },
+      { name: "studioImages", title: "Studio · 캐러셀 (자유 추가/삭제 — 입력 순서대로 슬라이드, key는 고유 값)" },
       { name: "teamImages", title: "Our Team · 팀 사진 (key: team-1, team-2)" },
     ],
     extraFields: [
