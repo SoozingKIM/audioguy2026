@@ -167,18 +167,44 @@ export async function getCommunityBoardPosts(
   try {
     const res = await fetch(url, {
       headers: {
-        // gnuboard sometimes 403s on bare Node UA strings; identify clearly.
+        // Use a real browser UA. Many Korean shared-hosting setups silently
+        // 403 or hang anything that looks bot-y (our previous "AudioguyBot"
+        // string was getting filtered in production). Accept-Language is
+        // included so gnuboard returns Korean content reliably.
         "User-Agent":
-          "Mozilla/5.0 (compatible; AudioguyBot/1.0; +https://audioguy.co.kr)",
-        Accept: "text/html,application/xhtml+xml",
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+        Accept:
+          "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
+        "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
       },
       next: { revalidate: 1800 }, // 30 minutes — jobs board updates a few/week
     });
-    if (!res.ok) return [];
+    if (!res.ok) {
+      console.error(
+        `[community] ${slug}: HTTP ${res.status} ${res.statusText} (URL ${url})`,
+      );
+      return [];
+    }
     html = await res.text();
-  } catch {
+    if (!html || html.length < 1000) {
+      console.error(
+        `[community] ${slug}: response body too small (${html?.length ?? 0} bytes) — likely blocked or empty`,
+      );
+      return [];
+    }
+  } catch (err) {
+    console.error(
+      `[community] ${slug}: fetch threw`,
+      err instanceof Error ? `${err.name}: ${err.message}` : String(err),
+    );
     return [];
   }
 
-  return parseListing(html, slug, limit);
+  const posts = parseListing(html, slug, limit);
+  if (posts.length === 0) {
+    console.error(
+      `[community] ${slug}: parser returned 0 posts from ${html.length}-byte HTML — selectors may need updating`,
+    );
+  }
+  return posts;
 }
