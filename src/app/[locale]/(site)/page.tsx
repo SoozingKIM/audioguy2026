@@ -53,7 +53,7 @@ export default async function HomePage({
           aria-hidden
           className="pointer-events-none absolute inset-y-0 left-0 z-[1] hidden w-1/2 items-center justify-center md:flex"
         >
-          <div className="pointer-events-auto relative aspect-square w-[min(78%,520px)] translate-x-[200px] scale-[1.3]">
+          <div className="pointer-events-auto relative aspect-square w-[min(78%,520px)] translate-x-[clamp(40px,12vw,200px)] scale-[1.15] lg:scale-[1.25] xl:scale-[1.3]">
             <ParticleGalaxy className="absolute inset-0" />
           </div>
         </div>
