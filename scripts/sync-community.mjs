@@ -13,6 +13,8 @@
  *   - NEXT_PUBLIC_SANITY_DATASET     (또는 SANITY_DATASET. 기본 production)
  *   - NEXT_PUBLIC_SANITY_API_VERSION (기본 2024-01-01)
  *   - SANITY_WRITE_TOKEN             (Sanity에 쓰기 권한 가진 토큰)
+ *   - COMMUNITY_API_TOKEN            (audioguy.co.kr/community/recent.php
+ *                                     접근 토큰. 해당 PHP의 $EXPECTED_TOKEN과 일치)
  *
  * 로컬에서 실행 시 .env.local 자동 로드. GitHub Actions에선 Repository
  * Secrets로 전달됨.
@@ -51,6 +53,7 @@ const DATASET =
 const API_VERSION =
   process.env.NEXT_PUBLIC_SANITY_API_VERSION || "2024-01-01";
 const TOKEN = process.env.SANITY_WRITE_TOKEN;
+const COMMUNITY_TOKEN = process.env.COMMUNITY_API_TOKEN;
 
 if (!PROJECT_ID) {
   console.error(
@@ -61,6 +64,12 @@ if (!PROJECT_ID) {
 if (!TOKEN) {
   console.error(
     "FATAL: SANITY_WRITE_TOKEN is missing. Generate one in Sanity → Manage → API → Tokens (with Editor or higher permission).",
+  );
+  process.exit(1);
+}
+if (!COMMUNITY_TOKEN) {
+  console.error(
+    "FATAL: COMMUNITY_API_TOKEN is missing. This must match the $EXPECTED_TOKEN in cafe24-upload/recent.php.",
   );
   process.exit(1);
 }
@@ -79,7 +88,7 @@ const UA =
   "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36";
 
 async function fetchBoard(board) {
-  const url = `${RECENT_PHP_BASE}?board=${encodeURIComponent(board)}&limit=5`;
+  const url = `${RECENT_PHP_BASE}?board=${encodeURIComponent(board)}&limit=5&token=${encodeURIComponent(COMMUNITY_TOKEN)}`;
   const res = await fetch(url, {
     headers: {
       "User-Agent": UA,

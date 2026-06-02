@@ -185,6 +185,11 @@ const JSON_API_URL = (
   process.env.COMMUNITY_PROXY_URL || `${BASE}/recent.php`
 ).replace(/\/$/, "");
 
+// Token required by recent.php (v5+). Must match $EXPECTED_TOKEN in
+// cafe24-upload/recent.php. Only needed for the fallback path — the Sanity
+// primary path doesn't touch the gnuboard server at all.
+const COMMUNITY_API_TOKEN = process.env.COMMUNITY_API_TOKEN || "";
+
 type JsonApiPost = {
   id?: string | number;
   title?: string;
@@ -212,7 +217,10 @@ async function tryJsonEndpoint(
   slug: string,
   limit: number,
 ): Promise<JsonResult> {
-  const url = `${JSON_API_URL}?board=${encodeURIComponent(slug)}&limit=${limit}`;
+  const tokenParam = COMMUNITY_API_TOKEN
+    ? `&token=${encodeURIComponent(COMMUNITY_API_TOKEN)}`
+    : "";
+  const url = `${JSON_API_URL}?board=${encodeURIComponent(slug)}&limit=${limit}${tokenParam}`;
   try {
     const res = await fetch(url, {
       headers: {
