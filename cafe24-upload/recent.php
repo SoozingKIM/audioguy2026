@@ -45,16 +45,16 @@ header('Access-Control-Allow-Methods: GET');
 header($json_ct);
 
 // === 토큰 인증 (외부 무단 접근 차단) ===
-// 토큰은 같은 폴더의 `recent-config.php`에서 읽음. 그 파일은 git에 안
-// 들어가고 FTP로만 업로드함 (recent-config.php.example 참조).
-// 같은 토큰 값을 GitHub Secret `COMMUNITY_API_TOKEN`과 로컬 .env.local에도
-// 동일하게 등록해야 sync가 통과함.
-$EXPECTED_TOKEN = '';
-@include __DIR__ . '/recent-config.php';
-
+// ⚠️ FTP 업로드 직전에 아래 placeholder를 실제 토큰으로 바꿔주세요.
+//    같은 토큰을 GitHub Secret `COMMUNITY_API_TOKEN` 및 로컬 .env.local에도
+//    동일하게 등록해야 sync가 통과합니다.
+//    git에는 placeholder 상태로만 들어가야 합니다 (secret leak 방지).
+$EXPECTED_TOKEN = '__PASTE_COMMUNITY_API_TOKEN_HERE__';
 $provided_token = isset($_GET['token']) ? (string) $_GET['token'] : '';
-if (!is_string($EXPECTED_TOKEN) || $EXPECTED_TOKEN === ''
-    || !hash_equals($EXPECTED_TOKEN, $provided_token)) {
+if (
+    $EXPECTED_TOKEN === '__PASTE_COMMUNITY_API_TOKEN_HERE__'
+    || !hash_equals($EXPECTED_TOKEN, $provided_token)
+) {
     http_response_code(403);
     echo json_encode(array('error' => 'forbidden'));
     exit;
