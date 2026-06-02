@@ -170,10 +170,18 @@ function parseListing(
 }
 
 // Preferred data source — a tiny JSON endpoint that we host on the gnuboard
-// server itself (Cafe24). Same-server DB query, no cross-origin blocking, no
-// HTML scraping. The fetcher below tries this first; if it isn't deployed yet
-// (or fails) we fall back to scraping the public listing HTML.
-const JSON_API_URL = `${BASE}/recent.php`;
+// server itself (Cafe24). Same-server DB query, no HTML scraping.
+//
+// In production we don't hit it directly because Cafe24's WAF blocks Vercel's
+// AWS IPs and serves a tiny HTML "this site is restricted" page instead. So
+// when COMMUNITY_PROXY_URL is set (typically pointing at a Cloudflare Worker
+// that re-fetches recent.php from a CF edge IP), we go through that proxy.
+//
+// In local dev the env var is usually unset → we just hit the gnuboard server
+// directly, which works fine from a Korean IP.
+const JSON_API_URL = (
+  process.env.COMMUNITY_PROXY_URL || `${BASE}/recent.php`
+).replace(/\/$/, "");
 
 type JsonApiPost = {
   id?: string | number;
