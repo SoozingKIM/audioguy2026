@@ -39,5 +39,4 @@ jobs:
           NEXT_PUBLIC_SANITY_DATASET: ${{ secrets.SANITY_DATASET }}
           NEXT_PUBLIC_SANITY_API_VERSION: ${{ secrets.SANITY_API_VERSION }}
           SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
-          COMMUNITY_API_TOKEN: ${{ secrets.COMMUNITY_API_TOKEN }}
         run: node scripts/sync-community.mjs

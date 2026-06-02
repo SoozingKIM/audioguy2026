@@ -1,34 +1,21 @@
 <?php
 /**
- * audioguy.co.kr 커뮤니티 → 메인 사이트 JSON 엔드포인트 (v5 — 토큰 인증)
+ * audioguy.co.kr 커뮤니티 → 메인 사이트 JSON 엔드포인트 (v4 — 파일 캐시 추가)
  *
  * 업로드 위치: audioguy.co.kr/community/recent.php (common.php와 같은 폴더)
  *
- * 변경점 (v4 → v5):
- *   - 토큰 인증(?token=...) 추가. 유효 토큰 없으면 403.
- *     Cafe24 방화벽에서 미국 등 IP를 허용해도 무단 봇 접근 차단.
+ * 변경점 (v3 → v4):
+ *   - 5분 파일 캐시 추가. 캐시 hit이면 DB 연결 0회, 그냥 캐시 파일 읽어 응답.
+ *   - Cafe24 'max_user_connections' 한도 회피.
  *
  * 호출:
- *   https://audioguy.co.kr/community/recent.php?board=joh&token=<TOKEN>
- *   https://audioguy.co.kr/community/recent.php?board=c_audioguy&token=<TOKEN>
+ *   https://audioguy.co.kr/community/recent.php?board=joh
+ *   https://audioguy.co.kr/community/recent.php?board=c_audioguy
  *   ?debug=1 추가 시 캐시 상태/에러 표시
  */
 
 if (!defined('JSON_UNESCAPED_UNICODE')) {
     define('JSON_UNESCAPED_UNICODE', 256);
-}
-
-// PHP 5.5 이하 호환 — hash_equals 폴리필 (타이밍 공격 방어)
-if (!function_exists('hash_equals')) {
-    function hash_equals($known, $user) {
-        if (!is_string($known) || !is_string($user)) return false;
-        if (strlen($known) !== strlen($user)) return false;
-        $diff = 0;
-        for ($i = 0, $n = strlen($known); $i < $n; $i++) {
-            $diff |= ord($known[$i]) ^ ord($user[$i]);
-        }
-        return $diff === 0;
-    }
 }
 
 $debug = isset($_GET['debug']) && $_GET['debug'] === '1';
@@ -43,22 +30,6 @@ $json_ct = 'Content-Type: application/json; charset=utf-8';
 header('Access-Control-Allow-Origin: *');
 header('Access-Control-Allow-Methods: GET');
 header($json_ct);
-
-// === 토큰 인증 (외부 무단 접근 차단) ===
-// ⚠️ FTP 업로드 직전에 아래 placeholder를 실제 토큰으로 바꿔주세요.
-//    같은 토큰을 GitHub Secret `COMMUNITY_API_TOKEN` 및 로컬 .env.local에도
-//    동일하게 등록해야 sync가 통과합니다.
-//    git에는 placeholder 상태로만 들어가야 합니다 (secret leak 방지).
-$EXPECTED_TOKEN = '__PASTE_COMMUNITY_API_TOKEN_HERE__';
-$provided_token = isset($_GET['token']) ? (string) $_GET['token'] : '';
-if (
-    $EXPECTED_TOKEN === '__PASTE_COMMUNITY_API_TOKEN_HERE__'
-    || !hash_equals($EXPECTED_TOKEN, $provided_token)
-) {
-    http_response_code(403);
-    echo json_encode(array('error' => 'forbidden'));
-    exit;
-}
 
 // 허용 게시판
 $ALLOWED = array('joh', 'c_audioguy');
