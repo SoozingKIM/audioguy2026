@@ -176,7 +176,15 @@ async function tryJsonEndpoint(
   const url = `${JSON_API_URL}?board=${encodeURIComponent(slug)}&limit=${limit}`;
   try {
     const res = await fetch(url, {
-      headers: { Accept: "application/json" },
+      headers: {
+        // Real browser headers — same defensive treatment as the HTML fetcher
+        // below. Cafe24's WAF can silently 403 / serve empty responses to bare
+        // Node fetch UAs, even on JSON endpoints.
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+        Accept: "application/json,*/*;q=0.8",
+        "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
+      },
       next: { revalidate: 1800 },
     });
     if (!res.ok) {
@@ -184,14 +192,40 @@ async function tryJsonEndpoint(
       // through to the HTML scraper. Other errors get logged.
       if (res.status !== 404) {
         console.error(
-          `[community] ${slug}: JSON endpoint HTTP ${res.status} ${res.statusText}`,
+          `[community] ${slug}: JSON endpoint HTTP ${res.status} ${res.statusText} (URL ${url})`,
+        );
+      } else {
+        console.warn(
+          `[community] ${slug}: recent.php returned 404 — PHP file not uploaded yet?`,
         );
       }
       return null;
     }
-    const data = (await res.json()) as JsonApiPost[];
-    if (!Array.isArray(data)) return null;
-    return data
+    const text = await res.text();
+    if (!text || text.length < 2) {
+      console.error(
+        `[community] ${slug}: JSON endpoint returned empty body (${text.length} bytes)`,
+      );
+      return null;
+    }
+    let data: unknown;
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      console.error(
+        `[community] ${slug}: JSON parse failed — first 200 chars: ${text.slice(0, 200)}`,
+        parseErr instanceof Error ? parseErr.message : String(parseErr),
+      );
+      return null;
+    }
+    if (!Array.isArray(data)) {
+      console.error(
+        `[community] ${slug}: JSON response not an array — got ${typeof data}: ${JSON.stringify(data).slice(0, 200)}`,
+      );
+      return null;
+    }
+    const dataArr = data as JsonApiPost[];
+    const posts = dataArr
       .filter((p): p is JsonApiPost & { id: string | number; title: string; url: string } =>
         p != null && (typeof p.id === "string" || typeof p.id === "number") &&
         typeof p.title === "string" && typeof p.url === "string",
@@ -204,6 +238,12 @@ async function tryJsonEndpoint(
           ? p.date
           : null,
       }));
+    if (posts.length === 0) {
+      console.warn(
+        `[community] ${slug}: JSON endpoint returned 0 valid posts from ${dataArr.length}-item array`,
+      );
+    }
+    return posts;
   } catch (err) {
     console.error(
       `[community] ${slug}: JSON endpoint fetch threw`,
