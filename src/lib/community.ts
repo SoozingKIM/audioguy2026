@@ -1,18 +1,20 @@
-// Community preview data source — pulls recent posts from the existing
-// gnuboard community at audioguy.co.kr.
+// Community preview data source — recent posts from the existing gnuboard
+// community at audioguy.co.kr.
 //
-// Primary path: hit `audioguy.co.kr/community/recent.php` (our own PHP
-// endpoint, see `cafe24-upload/recent.php`). It queries the gnuboard DB
-// directly and returns small JSON, with 5-minute server-side file cache so
-// repeated calls don't strain Cafe24's per-user MySQL connection limit.
+// Production primary path: the `communityCache` document in Sanity. A GitHub
+// Actions cron job (`.github/workflows/community-sync.yml`) runs every 30 min
+// and hits `audioguy.co.kr/community/recent.php` from GitHub's IPs (not
+// blocked by Cafe24), parses the JSON, and rewrites the Sanity document. The
+// home page just reads from Sanity — fast, reliable, and the Vercel→Cafe24
+// path is never touched.
 //
-// Fallback path: only if recent.php returns 404 (= not uploaded), scrape the
-// public board HTML. We DO NOT fall back on 5xx / connection errors — if the
-// gnuboard server is in trouble (max_user_connections, full disk, etc.) the
-// last thing we want is to pile more work on it with a heavier HTML request.
+// Local dev / fallback path: when the Sanity document is empty (first deploy
+// before the cron has run, or the schema isn't published yet), or in local
+// development, we hit recent.php directly. This works fine from Korean IPs
+// and from local laptops.
 //
-// Result is cached by Next.js for 30 min (`revalidate: 1800`) and fails
-// gracefully to an empty array so the home page always renders.
+// Both layers fail gracefully to an empty array so the home page always
+// renders even when everything's wrong.
 
 const ORIGIN = "https://audioguy.co.kr";
 const BASE = `${ORIGIN}/community`;
@@ -285,6 +287,83 @@ async function tryJsonEndpoint(
   }
 }
 
+// --- Sanity cache reader (production primary path) -------------------------
+
+type SanityCachedPost = {
+  wrId?: string | null;
+  title?: string | null;
+  url?: string | null;
+  date?: string | null;
+  author?: string | null;
+};
+
+type SanityCommunityCache = {
+  jobs?: SanityCachedPost[] | null;
+  column?: SanityCachedPost[] | null;
+  updatedAt?: string | null;
+};
+
+const COMMUNITY_CACHE_QUERY = `*[_id == "communityCache"][0]{
+  jobs[]{wrId, title, url, date, author},
+  column[]{wrId, title, url, date, author},
+  updatedAt
+}`;
+
+let sanityCachePromise: Promise<SanityCommunityCache | null> | null = null;
+
+/**
+ * Read the singleton `communityCache` doc from Sanity. Memoized per request
+ * so two parallel `getCommunityBoardPosts("jobs")` / `getCommunityBoardPosts(
+ * "column")` calls share one round-trip.
+ */
+async function readSanityCache(): Promise<SanityCommunityCache | null> {
+  if (!sanityCachePromise) {
+    sanityCachePromise = (async () => {
+      try {
+        // Lazy-import so the lib still loads in environments without the
+        // sanity package configured (e.g. the sync script's own runtime).
+        const { sanityFetch } = await import("@/sanity/lib/fetch");
+        return await sanityFetch<SanityCommunityCache | null>({
+          query: COMMUNITY_CACHE_QUERY,
+          tags: ["communityCache"],
+        });
+      } catch (err) {
+        console.error(
+          "[community] Sanity cache fetch failed",
+          err instanceof Error ? `${err.name}: ${err.message}` : String(err),
+        );
+        return null;
+      }
+    })();
+  }
+  return sanityCachePromise;
+}
+
+function mapSanityPosts(
+  items: SanityCachedPost[] | null | undefined,
+): CommunityPost[] {
+  if (!Array.isArray(items)) return [];
+  const result: CommunityPost[] = [];
+  for (const p of items) {
+    if (!p) continue;
+    if (typeof p.wrId !== "string" || !p.wrId) continue;
+    if (typeof p.title !== "string" || !p.title) continue;
+    if (typeof p.url !== "string" || !p.url) continue;
+    result.push({
+      id: p.wrId,
+      title: p.title,
+      url: p.url,
+      date:
+        typeof p.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(p.date)
+          ? p.date
+          : null,
+      author:
+        typeof p.author === "string" && p.author.length > 0 ? p.author : null,
+    });
+  }
+  return result;
+}
+
 export async function getCommunityBoardPosts(
   boardKey: CommunityBoardKey,
   limit = 5,
@@ -292,18 +371,23 @@ export async function getCommunityBoardPosts(
   const url = communityBoardUrl(boardKey);
   const slug = COMMUNITY_BOARDS[boardKey].slug;
 
-  // Primary path: the JSON endpoint hosted on the gnuboard server.
+  // 1) Primary (prod): read from Sanity cache. The sync job populates it
+  //    every 30 minutes; if it has data, we're done.
+  const cache = await readSanityCache();
+  if (cache) {
+    const items = boardKey === "jobs" ? cache.jobs : cache.column;
+    const posts = mapSanityPosts(items).slice(0, limit);
+    if (posts.length > 0) return posts;
+  }
+
+  // 2) Fallback (local dev / first run before cron / Sanity outage): hit the
+  //    PHP endpoint directly. Works fine from Korean IPs.
   const jsonResult = await tryJsonEndpoint(slug, limit);
   if (jsonResult.kind === "ok") return jsonResult.posts;
-  // If the endpoint is reachable but broken (5xx / garbage / timed-out),
-  // bail out with an empty list — don't fall back to HTML scraping, which
-  // would only add load on an already-struggling Cafe24 server. The home
-  // page will show "최근 게시물을 불러올 수 없습니다." until the next ISR
-  // revalidation tries again.
   if (jsonResult.kind === "broken") return [];
 
-  // Fallback only when recent.php is genuinely missing (404). Scrape the
-  // public board HTML listing as a last resort.
+  // 3) Last-resort fallback (only when recent.php returns 404): scrape the
+  //    public board HTML. Brittle but keeps the page alive.
   let html: string;
   try {
     const res = await fetch(url, {

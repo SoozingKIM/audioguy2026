@@ -1,0 +1,42 @@
+name: Community 동기화 (audioguy.co.kr → Sanity)
+
+# 30분마다 자동 실행 (main 브랜치에서만, GitHub 제약)
+# + Actions 탭에서 수동 실행 + 어느 브랜치든 push할 때 자동 실행
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch: {}
+  push:
+    branches:
+      - "**"
+
+# 한 번에 하나만 실행 (cron이 겹쳐서 두 번 도는 일 방지)
+concurrency:
+  group: community-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install @sanity/client
+        # 전체 npm install 대신 필요한 것만 — 빠르고 가벼움
+        run: npm install --no-save @sanity/client@7
+
+      - name: Run sync
+        env:
+          NEXT_PUBLIC_SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
+          NEXT_PUBLIC_SANITY_DATASET: ${{ secrets.SANITY_DATASET }}
+          NEXT_PUBLIC_SANITY_API_VERSION: ${{ secrets.SANITY_API_VERSION }}
+          SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+        run: node scripts/sync-community.mjs

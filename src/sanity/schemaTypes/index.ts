@@ -1,5 +1,6 @@
 import { type SchemaTypeDefinition } from "sanity";
 
+import { communityCacheType } from "./communityCache";
 import { discographyEntryType } from "./discographyEntry";
 import { imageSlotType } from "./imageSlot";
 import { localeStringType, localeTextType } from "./localized";
@@ -16,5 +17,6 @@ export const schema: { types: SchemaTypeDefinition[] } = {
     ...pageSingletonTypes,
     discographyEntryType,
     workScopeType,
+    communityCacheType,
   ],
 };
