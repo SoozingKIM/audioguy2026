@@ -1,9 +1,18 @@
 // Community preview data source — pulls recent posts from the existing
-// gnuboard community at audioguy.co.kr. The site has no JSON API and the RSS
-// feed's <link> elements drop the per-post wr_id, so we fetch the HTML board
-// listing server-side and parse it. Result is cached by Next.js for 30 min
-// (`revalidate: 1800`) and fails gracefully to an empty array on network /
-// parse errors so the home page can still render.
+// gnuboard community at audioguy.co.kr.
+//
+// Primary path: hit `audioguy.co.kr/community/recent.php` (our own PHP
+// endpoint, see `cafe24-upload/recent.php`). It queries the gnuboard DB
+// directly and returns small JSON, with 5-minute server-side file cache so
+// repeated calls don't strain Cafe24's per-user MySQL connection limit.
+//
+// Fallback path: only if recent.php returns 404 (= not uploaded), scrape the
+// public board HTML. We DO NOT fall back on 5xx / connection errors — if the
+// gnuboard server is in trouble (max_user_connections, full disk, etc.) the
+// last thing we want is to pile more work on it with a heavier HTML request.
+//
+// Result is cached by Next.js for 30 min (`revalidate: 1800`) and fails
+// gracefully to an empty array so the home page always renders.
 
 const ORIGIN = "https://audioguy.co.kr";
 const BASE = `${ORIGIN}/community`;
@@ -33,6 +42,10 @@ export type CommunityPost = {
   url: string;
   /** YYYY-MM-DD, or null if no date could be parsed near the title. */
   date: string | null;
+  /** wr_name (or mb_id fallback) from gnuboard. Available via JSON endpoint
+   *  only; the HTML scraper leaves this null. For 구인구직 this is usually
+   *  the hiring company's display name. */
+  author: string | null;
 };
 
 function decodeHtmlEntities(s: string): string {
@@ -150,7 +163,7 @@ function parseListing(
     if (ymd) {
       date = `${ymd[1]}-${ymd[2].padStart(2, "0")}-${ymd[3].padStart(2, "0")}`;
     }
-    posts.push({ id: cur.id, title: cur.title, url: absolutize(cur.href), date });
+    posts.push({ id: cur.id, title: cur.title, url: absolutize(cur.href), date, author: null });
   }
 
   return posts;
@@ -167,19 +180,34 @@ type JsonApiPost = {
   title?: string;
   url?: string;
   date?: string | null;
+  author?: string | null;
 };
+
+/**
+ * Three-state result so the caller can distinguish:
+ *   - "ok"        — JSON endpoint returned valid data (use it)
+ *   - "missing"   — recent.php returned 404 (= not uploaded yet; OK to fall back)
+ *   - "broken"    — recent.php is up but unhealthy (5xx, timeout, garbage, etc.)
+ *                   In this case we should NOT fall back to HTML scraping —
+ *                   piling another request onto an already-struggling Cafe24
+ *                   server (max_user_connections, full disk, etc.) makes it
+ *                   worse, not better. Caller returns an empty list.
+ */
+type JsonResult =
+  | { kind: "ok"; posts: CommunityPost[] }
+  | { kind: "missing" }
+  | { kind: "broken" };
 
 async function tryJsonEndpoint(
   slug: string,
   limit: number,
-): Promise<CommunityPost[] | null> {
+): Promise<JsonResult> {
   const url = `${JSON_API_URL}?board=${encodeURIComponent(slug)}&limit=${limit}`;
   try {
     const res = await fetch(url, {
       headers: {
-        // Real browser headers — same defensive treatment as the HTML fetcher
-        // below. Cafe24's WAF can silently 403 / serve empty responses to bare
-        // Node fetch UAs, even on JSON endpoints.
+        // Real browser headers — Cafe24's WAF can silently 403 / serve empty
+        // responses to bare Node fetch UAs even on JSON endpoints.
         "User-Agent":
           "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
         Accept: "application/json,*/*;q=0.8",
@@ -187,26 +215,24 @@ async function tryJsonEndpoint(
       },
       next: { revalidate: 1800 },
     });
+    if (res.status === 404) {
+      console.warn(
+        `[community] ${slug}: recent.php returned 404 — PHP file not uploaded yet?`,
+      );
+      return { kind: "missing" };
+    }
     if (!res.ok) {
-      // 404 here means the PHP file hasn't been uploaded yet — quietly fall
-      // through to the HTML scraper. Other errors get logged.
-      if (res.status !== 404) {
-        console.error(
-          `[community] ${slug}: JSON endpoint HTTP ${res.status} ${res.statusText} (URL ${url})`,
-        );
-      } else {
-        console.warn(
-          `[community] ${slug}: recent.php returned 404 — PHP file not uploaded yet?`,
-        );
-      }
-      return null;
+      console.error(
+        `[community] ${slug}: JSON endpoint HTTP ${res.status} ${res.statusText}`,
+      );
+      return { kind: "broken" };
     }
     const text = await res.text();
     if (!text || text.length < 2) {
       console.error(
         `[community] ${slug}: JSON endpoint returned empty body (${text.length} bytes)`,
       );
-      return null;
+      return { kind: "broken" };
     }
     let data: unknown;
     try {
@@ -216,13 +242,13 @@ async function tryJsonEndpoint(
         `[community] ${slug}: JSON parse failed — first 200 chars: ${text.slice(0, 200)}`,
         parseErr instanceof Error ? parseErr.message : String(parseErr),
       );
-      return null;
+      return { kind: "broken" };
     }
     if (!Array.isArray(data)) {
       console.error(
         `[community] ${slug}: JSON response not an array — got ${typeof data}: ${JSON.stringify(data).slice(0, 200)}`,
       );
-      return null;
+      return { kind: "broken" };
     }
     const dataArr = data as JsonApiPost[];
     const posts = dataArr
@@ -237,19 +263,17 @@ async function tryJsonEndpoint(
         date: typeof p.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(p.date)
           ? p.date
           : null,
+        author: typeof p.author === "string" && p.author.length > 0
+          ? p.author
+          : null,
       }));
-    if (posts.length === 0) {
-      console.warn(
-        `[community] ${slug}: JSON endpoint returned 0 valid posts from ${dataArr.length}-item array`,
-      );
-    }
-    return posts;
+    return { kind: "ok", posts };
   } catch (err) {
     console.error(
       `[community] ${slug}: JSON endpoint fetch threw`,
       err instanceof Error ? `${err.name}: ${err.message}` : String(err),
     );
-    return null;
+    return { kind: "broken" };
   }
 }
 
@@ -260,13 +284,18 @@ export async function getCommunityBoardPosts(
   const url = communityBoardUrl(boardKey);
   const slug = COMMUNITY_BOARDS[boardKey].slug;
 
-  // 1) Preferred: JSON endpoint (same-server, accurate, fast).
-  const fromJson = await tryJsonEndpoint(slug, limit);
-  if (fromJson && fromJson.length > 0) return fromJson;
+  // Primary path: the JSON endpoint hosted on the gnuboard server.
+  const jsonResult = await tryJsonEndpoint(slug, limit);
+  if (jsonResult.kind === "ok") return jsonResult.posts;
+  // If the endpoint is reachable but broken (5xx / garbage / timed-out),
+  // bail out with an empty list — don't fall back to HTML scraping, which
+  // would only add load on an already-struggling Cafe24 server. The home
+  // page will show "최근 게시물을 불러올 수 없습니다." until the next ISR
+  // revalidation tries again.
+  if (jsonResult.kind === "broken") return [];
 
-  // 2) Fallback: scrape the public HTML listing (works locally / from any
-  //    network that isn't IP-blocked by Cafe24's WAF).
-
+  // Fallback only when recent.php is genuinely missing (404). Scrape the
+  // public board HTML listing as a last resort.
   let html: string;
   try {
     const res = await fetch(url, {
