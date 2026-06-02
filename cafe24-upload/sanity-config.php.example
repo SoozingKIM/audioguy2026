@@ -1,0 +1,32 @@
+<?php
+/**
+ * sync-to-sanity.php가 require하는 설정 파일.
+ *
+ * 사용법:
+ *   1) 이 파일을 같은 폴더에 `sanity-config.php`로 복사하세요.
+ *   2) 각 값을 채우세요 (아래 PASTE_HERE 자리 모두).
+ *   3) `sanity-config.php`를 FTP로 audioguy.co.kr/community/ 에 업로드.
+ *      이 .example 파일은 업로드 안 해도 됩니다.
+ *
+ * 보안:
+ *   - `sanity-config.php`는 .gitignore에 등록되어 있어 실수로 commit되지
+ *     않습니다.
+ *   - PHP 파일이므로 URL로 직접 호출되어도 본문이 출력되지 않습니다
+ *     (변수만 set하고 종료).
+ *   - SANITY_WRITE_TOKEN은 Sanity의 Editor 권한 이상이어야 합니다.
+ *
+ * 토큰 회전(rotation) 시:
+ *   - SYNC_TOKEN을 바꿨다면 gnuboard hook에 박힌 토큰도 같이 갱신.
+ *   - SANITY_WRITE_TOKEN을 바꿨다면 Sanity Studio에서 새 토큰 발급 후 교체.
+ */
+
+// 이 sync 엔드포인트를 보호하는 임의 토큰 (gnuboard hook도 이 토큰을 보냄).
+$SYNC_TOKEN = 'PASTE_SYNC_TOKEN_HERE';
+
+// Sanity 프로젝트 정보 (.env.local의 NEXT_PUBLIC_SANITY_* 값과 동일).
+$SANITY_PROJECT_ID = 'PASTE_PROJECT_ID_HERE';
+$SANITY_DATASET = 'production';
+$SANITY_API_VERSION = '2025-05-04';
+
+// Sanity Manage → API → Tokens에서 Editor 권한으로 발급한 토큰.
+$SANITY_WRITE_TOKEN = 'PASTE_SANITY_WRITE_TOKEN_HERE';
