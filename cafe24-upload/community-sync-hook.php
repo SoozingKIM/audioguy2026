@@ -63,7 +63,9 @@ if (!function_exists('curl_init')) return;
 // G5_URL이 없으면 (직접 호출 등) hook 작동 불가 — 그냥 종료.
 if (!defined('G5_URL')) return;
 
-$_hook_url = G5_URL . '/community/sync-to-sanity.php'
+// G5_URL은 gnuboard root URL (이 사이트는 audioguy.co.kr/community/).
+// sync-to-sanity.php가 같은 root 바로 아래 있으니 '/community/' 접두는 빼야 함.
+$_hook_url = G5_URL . '/sync-to-sanity.php'
     . '?token=' . urlencode($SYNC_TOKEN)
     . '&from=gnuboard'
     . '&board=' . urlencode($bo_table);
