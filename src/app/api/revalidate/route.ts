@@ -38,7 +38,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    revalidateTag(body._type);
+    // Next.js 16: revalidateTag는 (tag, profile) 둘 다 필요. 우리 sanityFetch는
+    // 별도 cache-life profile을 지정하지 않으므로 'default' profile을 무효화한다.
+    revalidateTag(body._type, "default");
 
     return NextResponse.json({
       ok: true,
