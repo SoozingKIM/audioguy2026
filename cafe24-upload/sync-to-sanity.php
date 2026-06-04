@@ -29,6 +29,24 @@ if (!defined('JSON_UNESCAPED_UNICODE')) {
     define('JSON_UNESCAPED_UNICODE', 256);
 }
 
+// hook(write_update.php)이 500ms cURL fire-and-forget으로 호출했을 때,
+// 클라이언트 abort 후에도 PHP가 끝까지 실행되도록 보장. 이걸 안 하면 cafe24
+// PHP-FPM이 client abort 시 프로세스를 죽여서 Sanity push가 절반에 멈춤.
+ignore_user_abort(true);
+@set_time_limit(60);
+
+// 모든 호출(특히 from=gnuboard hook)을 디버그 로그에 기록. 디버깅 끝나면
+// 이 한 줄과 sync-debug.log 파일은 지워도 됨.
+@file_put_contents(
+    __DIR__ . '/sync-debug.log',
+    '[' . date('c') . '] sync-to-sanity called'
+        . ' from=' . (isset($_GET['from']) ? $_GET['from'] : '-')
+        . ' board=' . (isset($_GET['board']) ? $_GET['board'] : '-')
+        . ' ip=' . (isset($_SERVER['REMOTE_ADDR']) ? $_SERVER['REMOTE_ADDR'] : '-')
+        . "\n",
+    FILE_APPEND | LOCK_EX
+);
+
 // PHP 5.5 이하 호환 — hash_equals 폴리필
 if (!function_exists('hash_equals')) {
     function hash_equals($known, $user) {

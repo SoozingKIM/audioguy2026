@@ -27,10 +27,26 @@
  *   - 어떤 에러가 발생해도 글 쓰기 흐름을 막지 않음 (@ 연산자로 suppress).
  */
 
+// 디버그 — hook 호출이 어디까지 도달하는지 추적. 디버깅 끝나면 지워도 됨.
+@file_put_contents(
+    __DIR__ . '/sync-debug.log',
+    '[' . date('c') . '] hook entered'
+        . ' _GNUBOARD_=' . (defined('_GNUBOARD_') ? '1' : '0')
+        . ' bo_table=' . (isset($bo_table) ? $bo_table : '-')
+        . "\n",
+    FILE_APPEND | LOCK_EX
+);
+
 if (!defined('_GNUBOARD_')) return;
 
 // 우리 사이트 홈에 노출되는 두 보드만 처리. 다른 보드는 무시.
 if (!isset($bo_table) || !in_array($bo_table, array('joh', 'c_audioguy'), true)) {
+    @file_put_contents(
+        __DIR__ . '/sync-debug.log',
+        '[' . date('c') . '] hook skipped — board not in allowlist (was: '
+            . (isset($bo_table) ? $bo_table : '-') . ")\n",
+        FILE_APPEND | LOCK_EX
+    );
     return;
 }
 
@@ -52,16 +68,32 @@ $_hook_url = G5_URL . '/community/sync-to-sanity.php'
     . '&from=gnuboard'
     . '&board=' . urlencode($bo_table);
 
+@file_put_contents(
+    __DIR__ . '/sync-debug.log',
+    '[' . date('c') . '] hook firing curl: ' . $_hook_url . "\n",
+    FILE_APPEND | LOCK_EX
+);
+
 $_ch = @curl_init($_hook_url);
 if ($_ch !== false) {
     @curl_setopt($_ch, CURLOPT_RETURNTRANSFER, true);
-    // fire-and-forget — 500ms 안에 끊고 사용자 응답 빠르게 돌려보냄.
-    // 끊긴 후에도 sync-to-sanity.php 자체는 Cafe24 PHP-FPM에서 계속 실행됨.
-    @curl_setopt($_ch, CURLOPT_TIMEOUT_MS, 500);
-    @curl_setopt($_ch, CURLOPT_CONNECTTIMEOUT_MS, 500);
+    // 짧은 timeout으로 끊되 sync-to-sanity.php는 ignore_user_abort(true)
+    // 덕분에 백그라운드에서 끝까지 실행됨.
+    @curl_setopt($_ch, CURLOPT_TIMEOUT_MS, 800);
+    @curl_setopt($_ch, CURLOPT_CONNECTTIMEOUT_MS, 800);
     @curl_setopt($_ch, CURLOPT_NOSIGNAL, true);
-    @curl_exec($_ch);
+    $_resp = @curl_exec($_ch);
+    $_err = @curl_error($_ch);
+    $_code = @curl_getinfo($_ch, CURLINFO_HTTP_CODE);
     @curl_close($_ch);
+    @file_put_contents(
+        __DIR__ . '/sync-debug.log',
+        '[' . date('c') . '] hook curl done http=' . $_code
+            . ' err=' . substr($_err, 0, 80)
+            . ' resp=' . substr(is_string($_resp) ? $_resp : '', 0, 120)
+            . "\n",
+        FILE_APPEND | LOCK_EX
+    );
 }
 
 // 정리 — gnuboard 전역에 변수 누수 방지.
