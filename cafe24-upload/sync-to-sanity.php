@@ -196,6 +196,10 @@ if ($http_code === 200) {
     if ($debug) {
         $body['sanity_response'] = $response;
         $body['sanity_url'] = $sanity_url;
+        // 토큰 자체는 노출하지 않되, 어떤 토큰을 쓰고 있는지 식별할 수 있도록
+        // 앞 4자리 + 길이만 표시 (config 갱신이 반영됐는지 확인용).
+        $body['token_prefix'] = substr($SANITY_WRITE_TOKEN, 0, 4);
+        $body['token_length'] = strlen($SANITY_WRITE_TOKEN);
     } else {
         $body['hint'] = '?debug=1 추가하면 Sanity 응답 본문이 표시됩니다.';
     }
