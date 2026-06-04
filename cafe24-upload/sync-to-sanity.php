@@ -42,6 +42,26 @@ if (!function_exists('hash_equals')) {
     }
 }
 
+// PHP 5.3 이하 호환 — http_response_code 폴리필
+if (!function_exists('http_response_code')) {
+    function http_response_code($code = null) {
+        if ($code === null) {
+            return isset($GLOBALS['__http_response_code']) ? $GLOBALS['__http_response_code'] : 200;
+        }
+        $texts = array(
+            200 => 'OK', 201 => 'Created', 204 => 'No Content',
+            301 => 'Moved Permanently', 302 => 'Found', 304 => 'Not Modified',
+            400 => 'Bad Request', 401 => 'Unauthorized', 403 => 'Forbidden',
+            404 => 'Not Found', 500 => 'Internal Server Error', 503 => 'Service Unavailable',
+        );
+        $text = isset($texts[$code]) ? $texts[$code] : 'Status';
+        $protocol = isset($_SERVER['SERVER_PROTOCOL']) ? $_SERVER['SERVER_PROTOCOL'] : 'HTTP/1.0';
+        header($protocol . ' ' . $code . ' ' . $text, true, $code);
+        $GLOBALS['__http_response_code'] = $code;
+        return $code;
+    }
+}
+
 $debug = isset($_GET['debug']) && $_GET['debug'] === '1';
 if ($debug) {
     ini_set('display_errors', '1');
