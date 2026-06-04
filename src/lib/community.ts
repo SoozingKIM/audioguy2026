@@ -16,6 +16,8 @@
 // Both layers fail gracefully to an empty array so the home page always
 // renders even when everything's wrong.
 
+import { cache as reactCache } from "react";
+
 const ORIGIN = "https://audioguy.co.kr";
 const BASE = `${ORIGIN}/community`;
 
@@ -309,35 +311,34 @@ const COMMUNITY_CACHE_QUERY = `*[_id == "communityCache"][0]{
   updatedAt
 }`;
 
-let sanityCachePromise: Promise<SanityCommunityCache | null> | null = null;
-
 /**
- * Read the singleton `communityCache` doc from Sanity. Memoized per request
- * so two parallel `getCommunityBoardPosts("jobs")` / `getCommunityBoardPosts(
- * "column")` calls share one round-trip.
+ * Read the singleton `communityCache` doc from Sanity. Wrapped in React's
+ * `cache()` so two parallel `getCommunityBoardPosts("jobs")` /
+ * `getCommunityBoardPosts("column")` calls within the same request share one
+ * round-trip — but a NEW request always re-fetches (no cross-request stale).
  */
-async function readSanityCache(): Promise<SanityCommunityCache | null> {
-  if (!sanityCachePromise) {
-    sanityCachePromise = (async () => {
-      try {
-        // Lazy-import so the lib still loads in environments without the
-        // sanity package configured (e.g. the sync script's own runtime).
-        const { sanityFetch } = await import("@/sanity/lib/fetch");
-        return await sanityFetch<SanityCommunityCache | null>({
-          query: COMMUNITY_CACHE_QUERY,
-          tags: ["communityCache"],
-        });
-      } catch (err) {
-        console.error(
-          "[community] Sanity cache fetch failed",
-          err instanceof Error ? `${err.name}: ${err.message}` : String(err),
-        );
-        return null;
-      }
-    })();
-  }
-  return sanityCachePromise;
-}
+const readSanityCache = reactCache(
+  async (): Promise<SanityCommunityCache | null> => {
+    try {
+      // Lazy-import so the lib still loads in environments without the
+      // sanity package configured (e.g. the sync script's own runtime).
+      const { sanityFetch } = await import("@/sanity/lib/fetch");
+      // fresh=true: Sanity CDN + Next.js fetch 캐시 둘 다 우회. 새 글
+      // 작성 직후 새로고침이 즉시 반영되도록.
+      return await sanityFetch<SanityCommunityCache | null>({
+        query: COMMUNITY_CACHE_QUERY,
+        tags: ["communityCache"],
+        fresh: true,
+      });
+    } catch (err) {
+      console.error(
+        "[community] Sanity cache fetch failed",
+        err instanceof Error ? `${err.name}: ${err.message}` : String(err),
+      );
+      return null;
+    }
+  },
+);
 
 function mapSanityPosts(
   items: SanityCachedPost[] | null | undefined,
