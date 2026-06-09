@@ -1,0 +1,40 @@
+name: Community 동기화 (audioguy.co.kr → Sanity) — 비상용 수동 실행
+
+# 평상시에는 cafe24-upload/sync-to-sanity.php가 gnuboard 글 작성 hook으로
+# 직접 Sanity를 갱신함 (한국 IP라 차단 무관). 이 워크플로는 PHP push가
+# 일시적으로 안 될 때만 비상으로 수동 실행하는 백업.
+#
+# 자동 트리거(schedule, push)는 의도적으로 제거됨 — GitHub Actions runner
+# 외국 IP가 cafe24 방화벽에 차단되어 매번 실패하던 알림 노이즈를 막기 위함.
+on:
+  workflow_dispatch: {}
+
+concurrency:
+  group: community-sync
+  cancel-in-progress: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install @sanity/client
+        # 전체 npm install 대신 필요한 것만 — 빠르고 가벼움
+        run: npm install --no-save @sanity/client@7
+
+      - name: Run sync
+        env:
+          NEXT_PUBLIC_SANITY_PROJECT_ID: ${{ secrets.SANITY_PROJECT_ID }}
+          NEXT_PUBLIC_SANITY_DATASET: ${{ secrets.SANITY_DATASET }}
+          NEXT_PUBLIC_SANITY_API_VERSION: ${{ secrets.SANITY_API_VERSION }}
+          SANITY_WRITE_TOKEN: ${{ secrets.SANITY_WRITE_TOKEN }}
+        run: node scripts/sync-community.mjs

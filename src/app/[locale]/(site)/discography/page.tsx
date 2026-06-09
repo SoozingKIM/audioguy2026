@@ -74,7 +74,7 @@ export default async function DiscographyPage({
 
   return (
     <>
-      <section className="mx-auto max-w-7xl px-8 pt-16 md:pt-20 lg:px-14">
+      <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-28 lg:px-14">
         <div className="grid grid-cols-1 gap-x-12 gap-y-4 md:grid-cols-[280px_1fr]">
           <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-foreground/45">
@@ -90,7 +90,7 @@ export default async function DiscographyPage({
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-8 pt-10 lg:px-14">
+      <section className="mx-auto max-w-7xl px-8 pt-14 lg:px-14">
         <DiscographyFilters
           activeBrand={brand}
           activeScope={scopeSlug}
@@ -98,7 +98,7 @@ export default async function DiscographyPage({
         />
       </section>
 
-      <section className="mx-auto max-w-7xl px-8 pt-10 pb-4 lg:px-14">
+      <section className="mx-auto max-w-7xl px-8 pt-14 pb-4 lg:px-14">
         {entries.length === 0 ? (
           <p className="bg-foreground/3 px-6 py-10 text-center text-sm text-foreground/55">
             {cx("empty")}

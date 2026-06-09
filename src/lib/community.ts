@@ -1,9 +1,22 @@
-// Community preview data source — pulls recent posts from the existing
-// gnuboard community at audioguy.co.kr. The site has no JSON API and the RSS
-// feed's <link> elements drop the per-post wr_id, so we fetch the HTML board
-// listing server-side and parse it. Result is cached by Next.js for 30 min
-// (`revalidate: 1800`) and fails gracefully to an empty array on network /
-// parse errors so the home page can still render.
+// Community preview data source — recent posts from the existing gnuboard
+// community at audioguy.co.kr.
+//
+// Production primary path: the `communityCache` document in Sanity. A GitHub
+// Actions cron job (`.github/workflows/community-sync.yml`) runs every 30 min
+// and hits `audioguy.co.kr/community/recent.php` from GitHub's IPs (not
+// blocked by Cafe24), parses the JSON, and rewrites the Sanity document. The
+// home page just reads from Sanity — fast, reliable, and the Vercel→Cafe24
+// path is never touched.
+//
+// Local dev / fallback path: when the Sanity document is empty (first deploy
+// before the cron has run, or the schema isn't published yet), or in local
+// development, we hit recent.php directly. This works fine from Korean IPs
+// and from local laptops.
+//
+// Both layers fail gracefully to an empty array so the home page always
+// renders even when everything's wrong.
+
+import { cache as reactCache } from "react";
 
 const ORIGIN = "https://audioguy.co.kr";
 const BASE = `${ORIGIN}/community`;
@@ -33,6 +46,10 @@ export type CommunityPost = {
   url: string;
   /** YYYY-MM-DD, or null if no date could be parsed near the title. */
   date: string | null;
+  /** wr_name (or mb_id fallback) from gnuboard. Available via JSON endpoint
+   *  only; the HTML scraper leaves this null. For 구인구직 this is usually
+   *  the hiring company's display name. */
+  author: string | null;
 };
 
 function decodeHtmlEntities(s: string): string {
@@ -150,10 +167,202 @@ function parseListing(
     if (ymd) {
       date = `${ymd[1]}-${ymd[2].padStart(2, "0")}-${ymd[3].padStart(2, "0")}`;
     }
-    posts.push({ id: cur.id, title: cur.title, url: absolutize(cur.href), date });
+    posts.push({ id: cur.id, title: cur.title, url: absolutize(cur.href), date, author: null });
   }
 
   return posts;
+}
+
+// Preferred data source — a tiny JSON endpoint that we host on the gnuboard
+// server itself (Cafe24). Same-server DB query, no HTML scraping.
+//
+// In production we don't hit it directly because Cafe24's WAF blocks Vercel's
+// AWS IPs and serves a tiny HTML "this site is restricted" page instead. So
+// when COMMUNITY_PROXY_URL is set (typically pointing at a Cloudflare Worker
+// that re-fetches recent.php from a CF edge IP), we go through that proxy.
+//
+// In local dev the env var is usually unset → we just hit the gnuboard server
+// directly, which works fine from a Korean IP.
+const JSON_API_URL = (
+  process.env.COMMUNITY_PROXY_URL || `${BASE}/recent.php`
+).replace(/\/$/, "");
+
+type JsonApiPost = {
+  id?: string | number;
+  title?: string;
+  url?: string;
+  date?: string | null;
+  author?: string | null;
+};
+
+/**
+ * Three-state result so the caller can distinguish:
+ *   - "ok"        — JSON endpoint returned valid data (use it)
+ *   - "missing"   — recent.php returned 404 (= not uploaded yet; OK to fall back)
+ *   - "broken"    — recent.php is up but unhealthy (5xx, timeout, garbage, etc.)
+ *                   In this case we should NOT fall back to HTML scraping —
+ *                   piling another request onto an already-struggling Cafe24
+ *                   server (max_user_connections, full disk, etc.) makes it
+ *                   worse, not better. Caller returns an empty list.
+ */
+type JsonResult =
+  | { kind: "ok"; posts: CommunityPost[] }
+  | { kind: "missing" }
+  | { kind: "broken" };
+
+async function tryJsonEndpoint(
+  slug: string,
+  limit: number,
+): Promise<JsonResult> {
+  const url = `${JSON_API_URL}?board=${encodeURIComponent(slug)}&limit=${limit}`;
+  try {
+    const res = await fetch(url, {
+      headers: {
+        // Real browser headers — Cafe24's WAF can silently 403 / serve empty
+        // responses to bare Node fetch UAs even on JSON endpoints.
+        "User-Agent":
+          "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/121.0.0.0 Safari/537.36",
+        Accept: "application/json,*/*;q=0.8",
+        "Accept-Language": "ko-KR,ko;q=0.9,en;q=0.8",
+      },
+      next: { revalidate: 1800 },
+    });
+    if (res.status === 404) {
+      console.warn(
+        `[community] ${slug}: recent.php returned 404 — PHP file not uploaded yet?`,
+      );
+      return { kind: "missing" };
+    }
+    if (!res.ok) {
+      console.error(
+        `[community] ${slug}: JSON endpoint HTTP ${res.status} ${res.statusText}`,
+      );
+      return { kind: "broken" };
+    }
+    const text = await res.text();
+    if (!text || text.length < 2) {
+      console.error(
+        `[community] ${slug}: JSON endpoint returned empty body (${text.length} bytes)`,
+      );
+      return { kind: "broken" };
+    }
+    let data: unknown;
+    try {
+      data = JSON.parse(text);
+    } catch (parseErr) {
+      console.error(
+        `[community] ${slug}: JSON parse failed — first 200 chars: ${text.slice(0, 200)}`,
+        parseErr instanceof Error ? parseErr.message : String(parseErr),
+      );
+      return { kind: "broken" };
+    }
+    if (!Array.isArray(data)) {
+      console.error(
+        `[community] ${slug}: JSON response not an array — got ${typeof data}: ${JSON.stringify(data).slice(0, 200)}`,
+      );
+      return { kind: "broken" };
+    }
+    const dataArr = data as JsonApiPost[];
+    const posts = dataArr
+      .filter((p): p is JsonApiPost & { id: string | number; title: string; url: string } =>
+        p != null && (typeof p.id === "string" || typeof p.id === "number") &&
+        typeof p.title === "string" && typeof p.url === "string",
+      )
+      .map((p) => ({
+        id: String(p.id),
+        title: p.title,
+        url: p.url,
+        date: typeof p.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(p.date)
+          ? p.date
+          : null,
+        author: typeof p.author === "string" && p.author.length > 0
+          ? p.author
+          : null,
+      }));
+    return { kind: "ok", posts };
+  } catch (err) {
+    console.error(
+      `[community] ${slug}: JSON endpoint fetch threw`,
+      err instanceof Error ? `${err.name}: ${err.message}` : String(err),
+    );
+    return { kind: "broken" };
+  }
+}
+
+// --- Sanity cache reader (production primary path) -------------------------
+
+type SanityCachedPost = {
+  wrId?: string | null;
+  title?: string | null;
+  url?: string | null;
+  date?: string | null;
+  author?: string | null;
+};
+
+type SanityCommunityCache = {
+  jobs?: SanityCachedPost[] | null;
+  column?: SanityCachedPost[] | null;
+  updatedAt?: string | null;
+};
+
+const COMMUNITY_CACHE_QUERY = `*[_id == "communityCache"][0]{
+  jobs[]{wrId, title, url, date, author},
+  column[]{wrId, title, url, date, author},
+  updatedAt
+}`;
+
+/**
+ * Read the singleton `communityCache` doc from Sanity. Wrapped in React's
+ * `cache()` so two parallel `getCommunityBoardPosts("jobs")` /
+ * `getCommunityBoardPosts("column")` calls within the same request share one
+ * round-trip — but a NEW request always re-fetches (no cross-request stale).
+ */
+const readSanityCache = reactCache(
+  async (): Promise<SanityCommunityCache | null> => {
+    try {
+      // Lazy-import so the lib still loads in environments without the
+      // sanity package configured (e.g. the sync script's own runtime).
+      const { sanityFetch } = await import("@/sanity/lib/fetch");
+      // fresh=true: Sanity CDN + Next.js fetch 캐시 둘 다 우회. 새 글
+      // 작성 직후 새로고침이 즉시 반영되도록.
+      return await sanityFetch<SanityCommunityCache | null>({
+        query: COMMUNITY_CACHE_QUERY,
+        tags: ["communityCache"],
+        fresh: true,
+      });
+    } catch (err) {
+      console.error(
+        "[community] Sanity cache fetch failed",
+        err instanceof Error ? `${err.name}: ${err.message}` : String(err),
+      );
+      return null;
+    }
+  },
+);
+
+function mapSanityPosts(
+  items: SanityCachedPost[] | null | undefined,
+): CommunityPost[] {
+  if (!Array.isArray(items)) return [];
+  const result: CommunityPost[] = [];
+  for (const p of items) {
+    if (!p) continue;
+    if (typeof p.wrId !== "string" || !p.wrId) continue;
+    if (typeof p.title !== "string" || !p.title) continue;
+    if (typeof p.url !== "string" || !p.url) continue;
+    result.push({
+      id: p.wrId,
+      title: p.title,
+      url: p.url,
+      date:
+        typeof p.date === "string" && /^\d{4}-\d{2}-\d{2}$/.test(p.date)
+          ? p.date
+          : null,
+      author:
+        typeof p.author === "string" && p.author.length > 0 ? p.author : null,
+    });
+  }
+  return result;
 }
 
 export async function getCommunityBoardPosts(
@@ -163,6 +372,23 @@ export async function getCommunityBoardPosts(
   const url = communityBoardUrl(boardKey);
   const slug = COMMUNITY_BOARDS[boardKey].slug;
 
+  // 1) Primary (prod): read from Sanity cache. The sync job populates it
+  //    every 30 minutes; if it has data, we're done.
+  const cache = await readSanityCache();
+  if (cache) {
+    const items = boardKey === "jobs" ? cache.jobs : cache.column;
+    const posts = mapSanityPosts(items).slice(0, limit);
+    if (posts.length > 0) return posts;
+  }
+
+  // 2) Fallback (local dev / first run before cron / Sanity outage): hit the
+  //    PHP endpoint directly. Works fine from Korean IPs.
+  const jsonResult = await tryJsonEndpoint(slug, limit);
+  if (jsonResult.kind === "ok") return jsonResult.posts;
+  if (jsonResult.kind === "broken") return [];
+
+  // 3) Last-resort fallback (only when recent.php returns 404): scrape the
+  //    public board HTML. Brittle but keeps the page alive.
   let html: string;
   try {
     const res = await fetch(url, {

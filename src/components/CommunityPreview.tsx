@@ -78,11 +78,19 @@ export async function CommunityPreview() {
                       <span className="line-clamp-1 flex-1 text-[15px] tracking-[-0.18px] text-foreground transition-colors group-hover:text-[#0E58F8] md:text-[16px]">
                         {post.title}
                       </span>
-                      {post.date && (
-                        <span className="shrink-0 text-[12px] tabular-nums text-tertiary md:text-[13px]">
-                          {post.date.replace(/-/g, ".")}
-                        </span>
-                      )}
+                      <span className="flex shrink-0 items-baseline gap-3 text-[12px] tabular-nums text-tertiary md:text-[13px]">
+                        {/* Show author on the jobs board only — it's the hiring
+                            company name there. On the column board the author
+                            is always 운영자, so we omit it. */}
+                        {board.key === "jobs" && post.author && (
+                          <span className="hidden max-w-[120px] truncate text-foreground/55 sm:inline">
+                            {post.author}
+                          </span>
+                        )}
+                        {post.date && (
+                          <span>{post.date.replace(/-/g, ".")}</span>
+                        )}
+                      </span>
                     </a>
                   </li>
                 ))

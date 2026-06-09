@@ -83,12 +83,12 @@ function TeamCard({
             toggle();
           }
         }}
-        className="relative block aspect-[42/25] w-full cursor-pointer overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-foreground/30"
+        className="group relative block aspect-[42/25] w-full cursor-pointer overflow-hidden outline-none focus-visible:ring-2 focus-visible:ring-foreground/30"
       >
         {/* Front — photo (default) */}
         <div
           className={`absolute inset-0 bg-[#edeff2] transition-opacity duration-300 ${
-            open ? "opacity-0" : "opacity-100"
+            open ? "opacity-0" : "opacity-100 group-hover:opacity-0"
           }`}
         >
           {photoUrl ? (
@@ -108,15 +108,12 @@ function TeamCard({
               <PersonIcon />
             </div>
           )}
-          <span className="pointer-events-none absolute bottom-3 right-3 rounded-full bg-black/55 px-3 py-1.5 text-xs font-medium text-white backdrop-blur-sm">
-            이력 보기
-          </span>
         </div>
 
         {/* Back — career / credits (on click) */}
         <div
           className={`absolute inset-0 flex flex-col justify-end bg-foreground p-8 text-white transition-opacity duration-300 md:p-10 ${
-            open ? "opacity-100" : "pointer-events-none opacity-0"
+            open ? "opacity-100" : "pointer-events-none opacity-0 group-hover:opacity-100"
           }`}
         >
           {bio ? (
@@ -133,7 +130,7 @@ function TeamCard({
         </div>
       </div>
 
-      <div className="mt-3">
+      <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
         <p className="text-lg font-medium tracking-[-0.22px] text-foreground md:text-[22px]">
           {member.name}
         </p>

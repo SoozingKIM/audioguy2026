@@ -85,7 +85,7 @@ export function PeopleCarousel({
         {members.map((m) => (
           <div
             key={m.name}
-            className="shrink-0 basis-[70%] snap-start sm:basis-[45%] lg:basis-[28%]"
+            className="shrink-0 basis-[70%] snap-start sm:basis-[45%] lg:basis-[calc((100%-60px)/4)]"
           >
             <div className="relative aspect-[41/50] overflow-hidden bg-background-white">
               <SlotImage
@@ -98,7 +98,7 @@ export function PeopleCarousel({
                 className="object-cover"
               />
             </div>
-            <div className="mt-3">
+            <div className="mt-3 flex flex-wrap items-baseline gap-x-3 gap-y-0.5">
               <p className="text-lg font-medium tracking-[-0.22px] text-foreground md:text-[22px]">
                 {m.name}
               </p>

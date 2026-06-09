@@ -13,10 +13,11 @@ import { getPageImages } from "@/lib/pageImages";
 
 const STUDIO_IMAGES = ["/about/studio-1.jpg", "/about/studio-2.jpg"];
 
-// About hero glow — Figma Frame 20: a soft base ellipse, two mirrored ripple
-// "Union" rings, and three blue/purple glow ellipses. Reproduced from the
-// original Figma SVGs, positioned/sized as % of a 1360×660 stage so the whole
-// cluster scales together. Order is back→front.
+// About hero glow — Figma Frame 20 (1920×660): a soft base ellipse, two mirrored
+// ripple "Union" rings, and three blue/purple glow ellipses. Reproduced from the
+// original Figma SVGs, positioned/sized as % of the full 1920×660 frame
+// (aspect 32:11) so a full-bleed w-full stage reproduces the design edge-to-edge.
+// Heights are % of 660; widths/x are % of 1920. Order is back→front.
 const G = "/about/hero";
 const HERO_GLOW: {
   src: string;
@@ -26,12 +27,12 @@ const HERO_GLOW: {
   y: number;
   flip?: boolean;
 }[] = [
-  { src: "ellipse3", w: 119.27, h: 132.42, x: 50, y: 50 },
-  { src: "union", w: 55.87, h: 112.69, x: 38.12, y: 49.92 },
-  { src: "union", w: 55.87, h: 112.69, x: 64.26, y: 49.92, flip: true },
-  { src: "ellipse1", w: 45.59, h: 93.94, x: 44.85, y: 50 },
-  { src: "ellipse4", w: 45.59, h: 93.94, x: 69.12, y: 52.42 },
-  { src: "ellipse2", w: 52.94, h: 109.09, x: 54.56, y: 50 },
+  { src: "ellipse3", w: 84.48, h: 132.42, x: 50, y: 50 },
+  { src: "union", w: 39.57, h: 112.69, x: 41.58, y: 49.92 },
+  { src: "union", w: 39.57, h: 112.69, x: 60.1, y: 49.92, flip: true },
+  { src: "ellipse1", w: 32.29, h: 93.94, x: 46.35, y: 50 },
+  { src: "ellipse4", w: 32.29, h: 93.94, x: 63.54, y: 52.42 },
+  { src: "ellipse2", w: 37.5, h: 109.09, x: 53.23, y: 50 },
 ];
 
 // Heritage timeline — years fade out going back in time (Figma Frame 138);
@@ -81,7 +82,8 @@ export default async function AboutPage({
   const cx = contentResolver(c, locale, t);
   const { images } = await getPageImages("aboutPage");
 
-  const people: PeopleMember[] = [1, 2, 3, 4, 5].map((i) => ({
+  // 김소이(member3) 제외 — 노출 멤버: 최정훈·이동주·오대규·안범현
+  const people: PeopleMember[] = [1, 2, 4, 5].map((i) => ({
     slotKey: `team-${i}`,
     fallbackSrc: `/about/team-${i}.jpg`,
     name: cx(`people.member${i}Name`),
@@ -91,12 +93,12 @@ export default async function AboutPage({
   return (
     <>
       {/* Hero — The Soul (Figma Frame 20): rounded glow card, white centered text */}
-      <section className="mx-auto max-w-7xl px-6 pt-2 lg:px-14">
+      <section className="pt-2">
         <div className="relative flex min-h-[420px] items-center justify-center overflow-hidden rounded-[20px] bg-background sm:min-h-[500px] md:min-h-[600px] lg:min-h-[660px]">
           {/* Layered glow + ripple rings, centered on a fixed-aspect stage */}
           <div
             aria-hidden
-            className="pointer-events-none absolute left-1/2 top-1/2 aspect-[68/33] w-[760px] -translate-x-1/2 -translate-y-1/2 sm:w-[1040px] md:w-[1360px]"
+            className="pointer-events-none absolute left-1/2 top-1/2 aspect-32/11 w-full -translate-x-1/2 -translate-y-1/2"
           >
             {HERO_GLOW.map((g, i) => (
               <div
@@ -117,7 +119,7 @@ export default async function AboutPage({
           </div>
 
           {/* Text — white, positioned per Figma over the same stage */}
-          <div className="pointer-events-none absolute left-1/2 top-1/2 aspect-[68/33] w-[760px] -translate-x-1/2 -translate-y-1/2 text-white sm:w-[1040px] md:w-[1360px]">
+          <div className="pointer-events-none absolute left-1/2 top-1/2 aspect-32/11 w-full -translate-x-1/2 -translate-y-1/2 text-white">
             <div className="absolute left-1/2 top-[31.8%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 text-center">
               <p className="text-[11px] font-medium uppercase leading-[1.5] tracking-[-0.12px] text-white/60 md:text-xs">
                 {cx("hero.eyebrow")}
@@ -137,7 +139,7 @@ export default async function AboutPage({
       </section>
 
       {/* The Scale (Figma "Numbers") — decorative bg curve + frosted stat cards */}
-      <section data-reveal className="relative overflow-hidden pb-12 pt-20">
+      <section data-reveal className="relative overflow-hidden pb-12 pt-32">
         {/* Background: faint grid + purple/blue curve sweeping to the top-right,
             constrained to the 1440 content width and centered (matches Figma frame) */}
         <div
@@ -150,7 +152,7 @@ export default async function AboutPage({
             backgroundRepeat: "no-repeat",
           }}
         />
-        <div className="relative z-10 mx-auto max-w-7xl px-8 lg:px-14">
+        <div className="relative z-10 mx-auto max-w-[1440px] px-6 lg:px-10">
           <SectionHeader
             label={cx("scale.label")}
             title={cx("scale.title")}
@@ -175,7 +177,7 @@ export default async function AboutPage({
       </section>
 
       {/* The Ecosystem */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section className="mx-auto max-w-[1440px] px-6 pt-40 lg:px-10">
         <SectionHeader
           label={cx("ecosystem.label")}
           title={cx("ecosystem.title")}
@@ -212,7 +214,7 @@ export default async function AboutPage({
       </section>
 
       {/* The Heritage (Figma "Timeline") — fading years + monthly achievements, offset right */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section className="mx-auto max-w-[1440px] px-6 pt-40 lg:px-10">
         <SectionHeader
           label={cx("heritage.label")}
           title={cx("heritage.title")}
@@ -251,7 +253,7 @@ export default async function AboutPage({
       </section>
 
       {/* Tech — 검증된 기술력 (Dark) */}
-      <section className="relative isolate mt-24 overflow-hidden bg-[#121318] py-64 text-white md:py-80">
+      <section className="relative isolate mt-40 overflow-hidden bg-[#121318] py-64 text-white md:py-80">
         {/* 위·아래 페이드: 다크 밴드를 위/아래 흰 배경과 자연스럽게 연결 */}
         <div
           aria-hidden
@@ -278,7 +280,7 @@ export default async function AboutPage({
               "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
           }}
         />
-        <div className="relative z-10 mx-auto max-w-7xl px-8 lg:px-14">
+        <div className="relative z-10 mx-auto max-w-[1440px] px-6 lg:px-10">
           <div className="grid grid-cols-1 items-start gap-x-5 gap-y-6 md:grid-cols-2">
             <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
               {cx("tech.title")}
@@ -318,7 +320,7 @@ export default async function AboutPage({
       </section>
 
       {/* The People */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section className="mx-auto max-w-[1440px] px-6 pt-40 lg:px-10">
         <SectionHeader
           label={cx("people.label")}
           title={cx("people.title")}
@@ -334,29 +336,34 @@ export default async function AboutPage({
         </div>
       </section>
 
-      {/* The Proof — Partners orbit */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
-        <SectionHeader
-          label={cx("proof.label")}
-          title={cx("proof.title")}
-          description={cx("proof.description")}
-        />
+      {/* The Proof — Partners orbit. 배경은 궤도 클러스터 + 그 뒤로 좌우로 퍼지는
+          동심원 리플 글로우(Figma Frame 146의 Group 24 + Group 10)를 한 장으로 합성한
+          에셋. 리플(폭 1620)이 콘텐츠(1360)보다 넓어 바깥으로 살짝 블리드하므로
+          섹션을 풀폭 + overflow-hidden으로 두고, 헤더만 콘텐츠 폭으로 정렬한다. */}
+      <section className="relative overflow-hidden pt-40">
+        <div className="mx-auto max-w-[1440px] px-6 lg:px-10">
+          <SectionHeader
+            label={cx("proof.label")}
+            title={cx("proof.title")}
+            description={cx("proof.description")}
+          />
+        </div>
         <div
           role="img"
           aria-label="Partners & IP: NAXOS, TEICHIKU, KORG, Dolby Atmos, Genelec, Grammy Voting Member"
-          className="mx-auto mt-12 aspect-[1622/874] w-full max-w-[1080px] bg-contain bg-center bg-no-repeat"
+          className="mx-auto mt-12 aspect-[1620/1026] w-full max-w-[1620px] bg-contain bg-center bg-no-repeat"
           style={{ backgroundImage: "url(/about/partners.png)" }}
         />
       </section>
 
       {/* The Presence — Studios (Figma "Studio": two centered cards) */}
-      <section data-reveal className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section data-reveal className="mx-auto max-w-[1440px] px-6 pt-40 lg:px-10">
         <SectionHeader
           label={cx("presence.label")}
           title={cx("presence.title")}
           description={cx("presence.description")}
         />
-        <div className="mx-auto mt-10 grid max-w-[940px] grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
+        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
           {STUDIO_IMAGES.map((_img, idx) => {
             const i = idx + 1; // caption position (1, 2)
             const photo = 3 - i; // swapped photo: card 1 shows studio-2's image, card 2 shows studio-1's

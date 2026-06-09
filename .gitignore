@@ -40,3 +40,7 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# cafe24 community sync — 실제 토큰/secret 보유 파일 (FTP로만 관리)
+cafe24-upload/sanity-config.php
+cafe24-upload/recent-config.php

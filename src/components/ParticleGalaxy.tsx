@@ -51,6 +51,13 @@ export function ParticleGalaxy({
 
     const applySize = () => {
       const { w, h } = size();
+      // Skip the resize/projection update when the container is hidden
+      // (display:none drops clientWidth/Height to 0). The CSS hides the
+      // sphere below `md`; without this guard the ResizeObserver fires
+      // many times during a window drag and re-runs the (now meaningless)
+      // camera/projection recalculation, which contributes to the jank
+      // around the breakpoint.
+      if (w < 2 || h < 2) return;
       camera.aspect = w / h;
       camera.updateProjectionMatrix();
       updateCameraZ();
@@ -395,6 +402,11 @@ export function ParticleGalaxy({
     let raf = 0;
     const animate = () => {
       raf = requestAnimationFrame(animate);
+      // Skip the WebGL draw when the wrapper is hidden (display:none below
+      // the md breakpoint). The loop still schedules itself so it resumes
+      // automatically when the viewport grows past 768px and the wrapper
+      // becomes visible again; we just don't burn GPU/CPU on a 0x0 canvas.
+      if (container.clientWidth === 0 || container.clientHeight === 0) return;
       const delta = clock.getDelta();
       const elapsedTime = clock.getElapsedTime();
 
