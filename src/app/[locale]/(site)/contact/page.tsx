@@ -47,7 +47,7 @@ export default async function ContactPage({
   const phone = settings?.contactPhone ?? "02-734-3348";
 
   return (
-    <section className="mx-auto max-w-[1440px] px-10 py-10">
+    <section className="mx-auto max-w-[1440px] px-10 py-20">
       <div className="grid grid-cols-1 items-stretch gap-10 md:grid-cols-2">
         {/* Exact Figma left card (glow + email/call) as an image; the email/call
             are baked in, so invisible overlay links keep them clickable. */}

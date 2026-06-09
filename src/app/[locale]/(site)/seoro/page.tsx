@@ -148,7 +148,7 @@ export default async function SeoroPage({
       </section>
 
       {/* 사업 소개 */}
-      <section className="mx-auto max-w-7xl px-8 pt-20 lg:px-14">
+      <section className="mx-auto max-w-7xl px-8 pt-32 lg:px-14">
         <SectionHeader
           title={cx("business")}
           caption={cx("businessCaption")}
@@ -166,7 +166,7 @@ export default async function SeoroPage({
       </section>
 
       {/* 유통 프로세스 */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section className="mx-auto max-w-7xl px-8 pt-40 lg:px-14">
         <SectionHeader
           title={cx("process")}
           caption={cx("processCaption")}
@@ -207,7 +207,7 @@ export default async function SeoroPage({
       </section>
 
       {/* DSP 네트워크 (Dark) */}
-      <section className="mt-24 bg-foreground py-20 text-white md:py-24">
+      <section className="mt-40 bg-foreground py-20 text-white md:py-24">
         <div className="mx-auto max-w-7xl px-8 lg:px-14">
           <div className="grid grid-cols-1 items-start gap-x-5 gap-y-3 md:grid-cols-2">
             <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
@@ -228,7 +228,7 @@ export default async function SeoroPage({
       </section>
 
       {/* 파트너사 */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section className="mx-auto max-w-7xl px-8 pt-40 lg:px-14">
         <SectionHeader
           title={cx("partners")}
           caption={cx("partnersCaption")}
@@ -238,7 +238,7 @@ export default async function SeoroPage({
       </section>
 
       {/* 정산 시스템 소개 */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section className="mx-auto max-w-7xl px-8 pt-40 lg:px-14">
         <SectionHeader
           title={cx("settlement")}
           caption={cx("settlementCaption")}
@@ -263,7 +263,7 @@ export default async function SeoroPage({
 
       {/* DISCOGRAPHY — brand "seoro" entries from Sanity (managed in Studio
           → Discography Entry, filtered to brand=seoro, 5 most recent). */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section className="mx-auto max-w-7xl px-8 pt-40 lg:px-14">
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx("discography")}
         </h2>

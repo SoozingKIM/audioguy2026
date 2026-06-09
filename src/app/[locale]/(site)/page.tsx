@@ -76,7 +76,7 @@ export default async function HomePage({
       </section>
 
       {/* 2x2 Brand Cards — reproduced from Figma frames 177 / 186 */}
-      <section className="mx-auto max-w-[1440px] px-10 py-5">
+      <section className="mx-auto max-w-[1440px] px-10 py-12">
         <RevealCards className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {BRAND_CARDS.map((card) => (
             <Link
@@ -119,7 +119,7 @@ export default async function HomePage({
       {/* Brand Overview */}
       <section
         data-reveal
-        className="mx-auto max-w-[1440px] px-10 py-20 text-center"
+        className="mx-auto max-w-[1440px] px-10 py-28 text-center"
       >
         <p className="text-[16px] font-medium tracking-[-0.16px] text-tertiary">
           {cx("overviewLabel", "overview.label")}

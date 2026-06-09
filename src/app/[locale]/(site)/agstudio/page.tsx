@@ -125,7 +125,7 @@ export default async function AudioguyPage({
       </section>
 
       {/* Introduction — services as a click-to-expand accordion */}
-      <section className="mx-auto max-w-7xl px-8 pt-20 lg:px-14">
+      <section className="mx-auto max-w-7xl px-8 pt-32 lg:px-14">
         <p className="text-xs uppercase leading-normal tracking-[-0.12px] text-secondary">
           {cx("introduction")}
         </p>
@@ -137,7 +137,7 @@ export default async function AudioguyPage({
       </section>
 
       {/* STUDIO */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section className="mx-auto max-w-7xl px-8 pt-40 lg:px-14">
         <div className="grid grid-cols-1 items-start gap-x-5 gap-y-6 md:grid-cols-2">
           <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
             {cx("studio")}
@@ -167,7 +167,7 @@ export default async function AudioguyPage({
 
       {/* DISCOGRAPHY — brand "audioguy" entries from Sanity (managed in Studio
           → Discography Entry, filtered to brand=audioguy, 5 most recent). */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section className="mx-auto max-w-7xl px-8 pt-40 lg:px-14">
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx("discography")}
         </h2>
@@ -215,7 +215,7 @@ export default async function AudioguyPage({
       </section>
 
       {/* OUR TEAM (Figma Frame 206) */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section className="mx-auto max-w-7xl px-8 pt-40 lg:px-14">
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx("ourTeam")}
         </h2>

@@ -113,7 +113,7 @@ export default async function Sound360Page({
 
       {/* Branding — dark with glow + 360 logo (Figma Frame 211) */}
       <section
-        className="relative isolate overflow-hidden px-8 pb-56 pt-16 text-white md:pb-72 md:pt-20 lg:px-14"
+        className="relative isolate overflow-hidden pb-56 pt-16 text-white md:pb-72 md:pt-20"
         style={{
           background:
             "linear-gradient(118deg, #2a1648 0%, #1a1f4d 46%, #34548a 100%)",
@@ -142,7 +142,7 @@ export default async function Sound360Page({
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-linear-to-b from-black to-transparent md:h-48"
         />
-        <div className="relative z-10 mx-auto max-w-7xl">
+        <div className="relative z-10 mx-auto max-w-[1440px] px-6 lg:px-10">
           <Image
             src="/sound360/logo-360.png"
             alt="SOUND360"
@@ -170,13 +170,13 @@ export default async function Sound360Page({
           height. One continuous source (the hero) + a plain white fade = no
           second gradient and therefore no visible seam line (Figma Frame 217). */}
       <section
-        className="relative z-10 -mt-48 px-8 pt-10 md:-mt-64 lg:px-14"
+        className="relative z-10 -mt-48 pt-10 md:-mt-64"
         style={{
           background:
             "linear-gradient(to bottom, rgba(247,249,250,0) 0px, #f7f9fa 192px)",
         }}
       >
-        <div className="mx-auto grid max-w-7xl grid-cols-1 gap-3 md:grid-cols-3 md:gap-4">
+        <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-3 px-6 md:grid-cols-3 md:gap-4 lg:px-10">
           {POINT_CARDS.map((n) => (
             <div
               key={n}
@@ -188,7 +188,7 @@ export default async function Sound360Page({
       </section>
 
       {/* Work scope — service icon cards (Figma Frame 203) */}
-      <section data-reveal className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section data-reveal className="mx-auto max-w-[1440px] px-6 pt-40 lg:px-10">
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx("workScope")}
         </h2>
@@ -225,8 +225,8 @@ export default async function Sound360Page({
       </section>
 
       {/* STUDIO (dark) */}
-      <section className="mt-24 bg-[#121318] py-20 text-white md:py-24">
-        <div className="mx-auto max-w-7xl px-8 lg:px-14">
+      <section className="mt-40 bg-[#121318] py-20 text-white md:py-24">
+        <div className="mx-auto max-w-[1440px] px-6 lg:px-10">
           <div className="grid grid-cols-1 items-start gap-x-5 gap-y-6 md:grid-cols-2">
             <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
               {cx("studio")}
@@ -256,7 +256,7 @@ export default async function Sound360Page({
       </section>
 
       {/* DISCOGRAPHY */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section className="mx-auto max-w-[1440px] px-6 pt-40 lg:px-10">
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx("discography")}
         </h2>
@@ -305,7 +305,7 @@ export default async function Sound360Page({
       </section>
 
       {/* OUR TEAM */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 lg:px-14">
+      <section className="mx-auto max-w-[1440px] px-6 pt-40 lg:px-10">
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx("ourTeam")}
         </h2>
