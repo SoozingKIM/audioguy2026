@@ -2,9 +2,9 @@ export const CONTACT_BRANDS = ["audioguy", "sound360", "seoro"] as const;
 export type ContactBrand = (typeof CONTACT_BRANDS)[number];
 
 export const CONTACT_BRAND_LABELS: Record<ContactBrand, string> = {
-  audioguy: "Audioguy",
-  sound360: "Sound360",
-  seoro: "Seoro",
+  audioguy: "AUDIOGUY",
+  sound360: "SOUND360",
+  seoro: "SEORO",
 };
 
 export function isContactBrand(value: unknown): value is ContactBrand {

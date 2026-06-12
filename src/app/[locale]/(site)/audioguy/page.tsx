@@ -35,11 +35,64 @@ const HERO_GLOW: {
   { src: "ellipse2", w: 37.5, h: 109.09, x: 53.23, y: 50 },
 ];
 
-// Heritage timeline — years fade out going back in time (Figma Frame 138);
-// the active year (2026) is fully dark, older years progressively lighter.
-const HERITAGE_YEARS = ["2026", "2025", "2024", "2023", "2022", "2021"];
-const HERITAGE_YEAR_OPACITY = [1, 0.55, 0.38, 0.22, 0.12, 0.06];
-const HERITAGE_MONTHS = ["month5", "month4", "month3", "month2", "month1"];
+// The Heritage — company milestones grouped by year, newest first (Figma
+// "Timeline"). `highlight` marks the major achievements (filled marker + bold);
+// `sub` holds nested detail lines (e.g. 2023's sub-projects).
+type HeritageItem = { text: string; highlight?: boolean };
+const HERITAGE: { year: string; items: HeritageItem[] }[] = [
+  {
+    year: "2026",
+    items: [
+      { text: "예술경영지원센터 성장도약 프로그램 선정", highlight: true },
+      {
+        text: "한국콘텐츠진흥원 인공지능콘텐츠 제작지원사업 선정 (협력형)",
+        highlight: true,
+      },
+    ],
+  },
+  {
+    year: "2025",
+    items: [
+      { text: "K-Culture R&D 사업 선정" },
+      { text: "자체 AI 공간음향 제작엔진 AI-SPHR 1단계 개발 완료", highlight: true },
+      { text: "CES 2026 피칭 완료 (HAVAS, LIB MGMT 등 다수 기업 후속 진행)" },
+      {
+        text: "일본 4대 메이저 테이크엔터 100곡 초도 계약 완료 (500만 엔)",
+        highlight: true,
+      },
+      { text: "T-Square 16트랙 수급·제작 착수, 3월 릴리스 계약 완료", highlight: true },
+      { text: "Dolby Japan 시연 진행, 500만 엔 딜 소싱" },
+      { text: "한국콘텐츠진흥원 신기술융합콘텐츠 데모데이 장려상 수상", highlight: true },
+    ],
+  },
+  {
+    year: "2024",
+    items: [
+      { text: "TIPS 선정" },
+      {
+        text: "메이브, 플레이브, 리센느, tripleS, Naevis, (G)I-DLE 등 K-POP 아티스트 공간음향 작업",
+      },
+      { text: "예술경영지원센터 창업도약 지원사업 선정, 우수 판정", highlight: true },
+      { text: "한국콘텐츠진흥원 뮤직테크 지원사업" },
+      { text: "투자유치 SEED 7억 원 (킹슬리벤처스, CNT TECH)" },
+      { text: "광주 음악창작소 뮤지션 제작지원 / 인큐베이팅 사업 운영 (3년 연속)" },
+      { text: "한국콘텐츠진흥원 KNOCK 최우수상 수상" },
+      {
+        text: "Apple Vision Pro용 공간음향 라디오 스트리밍 애플리케이션 AUDIOSPHR lite 버전 출시",
+        highlight: true,
+      },
+    ],
+  },
+  {
+    year: "2023",
+    items: [
+      { text: "한국콘텐츠진흥원 신기술 콘텐츠랩 운영" },
+      { text: "한국콘텐츠진흥원 신기술 융합 온·오프라인 공연사업 수행" },
+      { text: "전라북도 레드로드 음악창작소 음원·음반 제작 및 유통지원 운영용역 수행" },
+      { text: "서울시향 공간음향 라이브 스트리밍 (예술의전당 콘서트홀)" },
+    ],
+  },
+];
 
 function SectionHeader({
   label,
@@ -213,41 +266,70 @@ export default async function AboutPage({
         </div>
       </section>
 
-      {/* The Heritage (Figma "Timeline") — fading years + monthly achievements, offset right */}
-      <section className="mx-auto max-w-[1440px] px-6 pt-40 lg:px-10">
+      {/* The Heritage — centred zig-zag timeline of company milestones */}
+      <section className="mx-auto max-w-[1440px] px-6 pb-24 pt-48 md:pb-32 md:pt-56 lg:px-10">
         <SectionHeader
           label={cx("heritage.label")}
           title={cx("heritage.title")}
           description={cx("heritage.description")}
         />
-        <div className="mt-12 flex gap-8 md:ml-[34%] md:gap-12">
-          {/* Years — right-aligned, progressively faded toward the past */}
-          <div className="flex flex-col">
-            {HERITAGE_YEARS.map((year, idx) => (
-              <span
-                key={year}
-                className="flex h-[52px] items-center justify-end text-right text-[32px] font-bold leading-none tracking-[-0.46px] text-foreground md:h-16 md:text-[46px]"
-                style={{ opacity: HERITAGE_YEAR_OPACITY[idx] }}
-              >
-                {year}
-              </span>
-            ))}
-          </div>
-          {/* Monthly achievements for the active year */}
-          <div className="flex flex-col">
-            {HERITAGE_MONTHS.map((mk) => (
-              <p
-                key={mk}
-                className="flex h-[52px] items-center gap-3 md:h-16"
-              >
-                <span className="w-12 shrink-0 text-lg font-semibold leading-none tracking-[-0.28px] text-foreground md:w-16 md:text-[28px]">
-                  {cx(`heritage.${mk}`)}
-                </span>
-                <span className="text-lg font-medium leading-none tracking-[-0.28px] text-foreground md:text-[28px]">
-                  {cx("heritage.achievement")}
-                </span>
-              </p>
-            ))}
+        {/* Centred timeline: a rail down the middle (left edge on mobile), a
+            node per year, achievements alternating left/right of the rail and
+            hugging the centre. Years fade subtly toward the past. */}
+        <div className="relative mx-auto mt-16 max-w-[1080px] md:mt-24">
+          {/* Rail */}
+          <div
+            aria-hidden
+            className="absolute bottom-1 top-1 w-px bg-foreground/15 left-[5px] md:left-1/2 md:-translate-x-1/2"
+          />
+          <div className="flex flex-col gap-16 md:gap-24">
+            {HERITAGE.map((group, idx) => {
+              const left = idx % 2 === 1; // alternate sides on desktop
+              return (
+                // data-reveal: each year fades + rises in as it scrolls into
+                // view (handled by <SectionReveal />). `group` enables the
+                // node's hover response below.
+                <div key={group.year} data-reveal className="group relative">
+                  {/* Year node on the rail — grows when the row is hovered */}
+                  <span
+                    aria-hidden
+                    className="absolute top-[7px] z-10 h-[11px] w-[11px] rounded-full bg-foreground ring-4 ring-background transition-transform duration-300 ease-out group-hover:scale-[1.6] left-0 md:left-1/2 md:top-3 md:-translate-x-1/2"
+                  />
+                  {/* Content — full width past the left rail on mobile; one half,
+                      alternating, on desktop. */}
+                  <div
+                    className={`pl-7 md:w-1/2 md:pl-0 ${
+                      left ? "md:pr-14 md:text-right" : "md:ml-auto md:pl-14"
+                    }`}
+                  >
+                    <div
+                      className="text-[30px] font-bold leading-none tracking-[-0.46px] text-foreground md:text-[44px]"
+                      style={{ opacity: 1 - idx * 0.16 }}
+                    >
+                      {group.year}
+                    </div>
+                    <ul
+                      className={`mt-7 flex flex-col gap-5 md:gap-6 ${
+                        left ? "md:items-end" : ""
+                      }`}
+                    >
+                      {group.items.map((item, i) => (
+                        <li
+                          key={i}
+                          className={`flex flex-col gap-1.5 ${
+                            left ? "md:items-end" : ""
+                          }`}
+                        >
+                          <span className="max-w-lg cursor-default text-pretty break-keep text-[16px] font-medium leading-relaxed tracking-[-0.2px] text-secondary transition-colors duration-300 hover:text-foreground md:text-[18px]">
+                            {item.text}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>
@@ -301,7 +383,7 @@ export default async function AboutPage({
           <div
             aria-hidden
             className="mt-10 aspect-[1360/600] w-full bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: "url(/about/tech-sphere.png)" }}
+            style={{ backgroundImage: "url(/about/tech-sphere.svg)" }}
           />
 
           <RevealCards className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">

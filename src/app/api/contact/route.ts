@@ -1,10 +1,14 @@
 import { NextResponse } from "next/server";
+import nodemailer from "nodemailer";
 
 import {
   CONTACT_BRAND_LABELS,
   getRecipientFor,
   isContactBrand,
 } from "@/lib/contactEmails";
+
+// nodemailer는 Node 런타임에서만 동작 (Edge 불가)
+export const runtime = "nodejs";
 
 type Payload = {
   brand?: string;
@@ -36,16 +40,24 @@ export async function POST(request: Request) {
     );
   }
 
-  const apiKey = process.env.RESEND_API_KEY;
-  if (!apiKey) {
+  const host = process.env.SMTP_HOST;
+  const user = process.env.SMTP_USER;
+  const pass = process.env.SMTP_PASS;
+  if (!host || !user || !pass) {
     return NextResponse.json(
-      { error: "Server not configured (RESEND_API_KEY missing)" },
+      { error: "Server not configured (SMTP_HOST/SMTP_USER/SMTP_PASS missing)" },
       { status: 500 },
     );
   }
+  // 465 = SMTPS(암시적 TLS), 그 외(587/25) = STARTTLS
+  const port = Number(process.env.SMTP_PORT ?? "465");
+  const secure = process.env.SMTP_SECURE
+    ? process.env.SMTP_SECURE === "true"
+    : port === 465;
 
   const recipient = getRecipientFor(brand);
-  const from = process.env.CONTACT_EMAIL_FROM ?? "Audioguy <onboarding@resend.dev>";
+  // 발신 주소는 SMTP 계정(또는 등록된 별칭)이어야 함. 표시 이름은 자유.
+  const from = process.env.CONTACT_EMAIL_FROM ?? `Audioguy 문의 <${user}>`;
   const brandLabel = CONTACT_BRAND_LABELS[brand];
   const subject = `[${brandLabel} 문의] ${name}${company ? ` · ${company}` : ""}`;
 
@@ -82,24 +94,24 @@ export async function POST(request: Request) {
   </table>
 </div>`.trim();
 
-  const res = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
+  const transporter = nodemailer.createTransport({
+    host,
+    port,
+    secure,
+    auth: { user, pass },
+  });
+
+  try {
+    await transporter.sendMail({
       from,
-      to: [recipient],
-      reply_to: email,
+      to: recipient,
+      replyTo: email,
       subject,
       text,
       html,
-    }),
-  });
-
-  if (!res.ok) {
-    const detail = await res.text().catch(() => "");
+    });
+  } catch (err) {
+    const detail = err instanceof Error ? err.message : String(err);
     return NextResponse.json(
       { error: "Failed to send email", detail },
       { status: 502 },
