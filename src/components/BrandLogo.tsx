@@ -19,8 +19,8 @@ export function BrandLogo({
         aria-hidden="true"
         className={className}
         style={{
-          maskImage: "url(/logo-audioguy.png)",
-          WebkitMaskImage: "url(/logo-audioguy.png)",
+          maskImage: "url(/logo.png)",
+          WebkitMaskImage: "url(/logo.png)",
           maskRepeat: "no-repeat",
           WebkitMaskRepeat: "no-repeat",
           maskSize: "contain",
