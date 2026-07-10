@@ -7,8 +7,8 @@ import type { SiteSettings } from "@/sanity/types";
 // 네비바(Header)의 NAV_KEYS와 동일하게 유지
 const FOOTER_NAV_KEYS = [
   // { href: "/", key: "home" },
-  { href: "/audioguy", key: "about" },
-  { href: "/agstudio", key: "audioguy" },
+  { href: "/about", key: "about" },
+  { href: "/audioguy", key: "audioguy" },
   { href: "/sound360", key: "sound360" },
   { href: "/seoro", key: "seoro" },
   // 임시 숨김: 네비바와 맞춰 discography 제거 (복구하려면 주석 해제)
@@ -77,7 +77,10 @@ export async function Footer({
           <div>
             © {siteName.toUpperCase()} {t("rights")}
           </div>
-          <div className="mt-2 md:mt-0">{address}</div>
+          <div className="mt-2 space-y-0.5 md:mt-0 md:text-right">
+            <div>{address}</div>
+            <div>{t("addressSound360")}</div>
+          </div>
         </div>
       </div>
     </footer>

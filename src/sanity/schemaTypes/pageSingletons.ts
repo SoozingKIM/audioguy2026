@@ -82,6 +82,7 @@ const agstudioContentPaths = [
   "discography", "recentWork", "selectedAlbums",
   "ourTeam", "team1Name", "team1Role", "team2Name", "team2Role",
   "team2Bullet1", "team2Bullet2", "team2Bullet3",
+  "team3Name", "team3Role", "team4Name", "team4Role",
 ];
 const agstudioContentMulti = ["locationBody1", "locationBody2", "studioBody"];
 
@@ -98,7 +99,8 @@ const seoroContentPaths = [
   "label", "title", "desc1", "desc2",
   "business", "businessCaption", "businessDesc",
   "process", "processCaption", "processDesc",
-  "step1Title", "step1Hint", "step2Title", "step3Title", "step4Title", "step5Title", "step6Title",
+  "step1Title", "step1Hint", "step2Title", "step3Title", "step4Title", "step5Title", "step6Title", "step7Title", "step8Title",
+  "step1Desc", "step2Desc", "step3Desc", "step4Desc", "step5Desc", "step6Desc", "step7Desc", "step8Desc",
   "dspNetwork", "dspSubtitle", "dspDesc", "dspTab1", "dspTab2", "dspTab3", "dspTab4",
   "partners", "partnersCaption", "partnersDesc", "partnerTab1", "partnerTab2", "partnerTab3", "partnerTab4",
   "settlement", "settlementCaption", "settlementSystem", "settlementDesc",
@@ -236,7 +238,7 @@ export const PAGE_SINGLETONS: PageSingletonConfig[] = [
         title: "작업 내용 · 이미지 (key: orchestra-1·2, studioRec-1·2, mixing-1·2, demo-1·2)",
       },
       { name: "studioImages", title: "Studio · 피아노 (key: piano)" },
-      { name: "teamImages", title: "Our Team · 팀 사진 (key: team-1, team-2)" },
+      { name: "teamImages", title: "Our Team · 팀 사진 (key: team-1 ~ team-4)" },
     ],
     extraFields: [
       featuredDiscographyField("audioguy"),

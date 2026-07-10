@@ -15,14 +15,22 @@ import { sanityFetch } from '@/sanity/lib/fetch';
 import { brandRecentDiscographyQuery } from '@/sanity/lib/queries';
 import type { DiscographyEntry } from '@/sanity/types';
 
-// Point cards & service icons reproduced from Figma as exported images.
-const POINT_CARDS = [1, 2, 3] as const;
-// Soft glow background (icon-N.png) + crisp high-res icon overlaid on top.
+// 작업 내용 및 범위 — 4개 서비스 카드. 모두 검은 박스 + 가운데 축소 아이콘으로 통일.
+// service1은 단색 아이콘이라 살짝 작게(62%), 나머지 글로우 그래픽은 78%.
 const SERVICES = [
-  { key: 'service1', fg: 'icon-fg-1.png', fgSize: 33.5, fgOpacity: 1 },
-  { key: 'service2', fg: 'icon-fg-2.png', fgSize: 29.9, fgOpacity: 0.9 },
-  { key: 'service3', fg: 'icon-fg-3.png', fgSize: 29.9, fgOpacity: 1 },
-  { key: 'service4', fg: null, fgSize: 0, fgOpacity: 1 },
+  { key: 'service1', img: 'icon-fg-1.png', maxH: 62 },
+  { key: 'service2', img: 'work/spatial.jpg', maxH: 78 },
+  { key: 'service3', img: 'work/post.jpg', maxH: 78 },
+  { key: 'service4', img: 'work/live.jpg', maxH: 78 },
+] as const;
+
+// DISCOGRAPHY 하단 XR 카테고리 (VR/XR 콘서트 실적). 이미지는 /public/sound360/xr.
+// Album 카드와 동일하게 title(곡/작품명) + artist 로 분리해 표기.
+const XR_WORKS = [
+  { title: '별별별 (See that)', artist: 'NMIXX', src: '/sound360/xr/nmixx.jpg' },
+  { title: "World Tour ‘dominATE JAPAN’ VR", artist: 'Stray Kids', src: '/sound360/xr/straykids.jpg' },
+  { title: 'LYNKPOP VR CONCERT', artist: 'aespa', src: '/sound360/xr/aespa.jpg' },
+  { title: 'Hit the floor', artist: 'tripleS', src: '/sound360/xr/triples.jpg' },
 ] as const;
 
 // Studio carousel slides are built at request time from
@@ -30,11 +38,22 @@ const SERVICES = [
 // carousel + indicator bar auto-adapt to the count). The local /public
 // fallback list below is used only when Sanity has no entries yet.
 const STUDIO_FALLBACK: StudioSlide[] = [
-  { slotKey: 'studio', fallbackSrc: '/sound360/studio.jpg' },
-  { slotKey: 'studio-2', fallbackSrc: '/sound360/studio-2.jpg' },
-  { slotKey: 'studio-3', fallbackSrc: '/sound360/studio-3.jpg' },
-  { slotKey: 'studio-4', fallbackSrc: '/sound360/studio-4.jpg' },
+  { slotKey: 'studio-a', fallbackSrc: '/sound360/studio/a-room.jpg' },
+  { slotKey: 'studio-b', fallbackSrc: '/sound360/studio/b-room.jpg' },
+  { slotKey: 'studio-c', fallbackSrc: '/sound360/studio/c-room.jpg' },
+  { slotKey: 'studio-hall', fallbackSrc: '/sound360/studio/hall.jpg' },
+  { slotKey: 'studio-entrance', fallbackSrc: '/sound360/studio/entrance.jpg' },
 ];
+
+// SOUND360 스튜디오 주소 + 지도 링크 (네이버 지도 검색).
+const SOUND360_ADDRESS = '서울시 서초구 효령로52길 57 지하 1층';
+const SOUND360_MAP_HREF = `https://map.naver.com/p/search/${encodeURIComponent(
+  '서초구 효령로52길 57',
+)}`;
+// 구글 지도 임베드 — 상호명(SOUND360) + 주소로 검색해 정확한 업체에 핀이 찍히도록 한다(키 불필요).
+const SOUND360_GMAP_EMBED = `https://maps.google.com/maps?q=${encodeURIComponent(
+  `SOUND360 ${SOUND360_ADDRESS}`,
+)}&z=16&hl=ko&output=embed`;
 
 export default async function Sound360Page({
   params,
@@ -78,12 +97,14 @@ export default async function Sound360Page({
       name: cx('team1Name'),
       role: cx('team1Role'),
       slotKey: 'team-1',
+      fallbackSrc: '/sound360/team-1.jpg',
       bio: [cx('team1Bullet1'), cx('team1Bullet2')],
     },
     {
       name: cx('team2Name'),
       role: cx('team2Role'),
       slotKey: 'team-2',
+      fallbackSrc: '/sound360/team-2.jpg',
       bio: [
         cx('team2Bullet1'),
         cx('team2Bullet2'),
@@ -99,9 +120,9 @@ export default async function Sound360Page({
 
   return (
     <>
-      {/* Branding — dark with glow + 360 logo (Figma Frame 211) */}
+      {/* ① Hero — 헤드라인 + 소개문 (eyebrow 제거). dark 그라데이션 배경 */}
       <section
-        className="relative isolate overflow-hidden pb-56 pt-16 text-white md:pb-72 md:pt-20"
+        className="relative isolate overflow-hidden pb-28 pt-16 text-white md:pb-36 md:pt-20"
         style={{
           background:
             'linear-gradient(118deg, #2a1648 0%, #1a1f4d 46%, #34548a 100%)',
@@ -123,14 +144,12 @@ export default async function Sound360Page({
             style={{ backgroundImage: 'url(/sound360/hero-glow.png)' }}
           />
         )}
-        {/* Top dissolve into the black video section above. The dissolve into
-            the light page below is handled by the next section's gradient, so
-            the purple can bleed across the boundary. */}
+        {/* 네비바 가독성을 위한 상단 디졸브 */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-x-0 top-0 h-32 bg-linear-to-b from-black to-transparent md:h-48"
         />
-        <div className="relative z-10 mx-auto max-w-[1440px] px-6 lg:px-10">
+        <div className="relative z-10 mx-auto max-w-7xl px-8 lg:px-14">
           <Image
             src="/sound360/logo-360.png"
             alt="SOUND360"
@@ -138,132 +157,43 @@ export default async function Sound360Page({
             height={40}
             className="mt-8 h-9 w-auto md:mt-10"
           />
-          <div className="mt-10 max-w-[1360px]">
-            <p className="text-base font-semibold uppercase tracking-[0.12em] text-white/70 md:text-xl">
-              {cx('label')}
-            </p>
-            <h1 className="mt-6 whitespace-normal text-5xl font-semibold leading-[1] tracking-[-1.63px] md:mt-16 md:whitespace-nowrap md:text-[64px] lg:text-[96px] xl:text-[112px] 2xl:text-[130px]">
+          <div className="mt-10">
+            <h1 className="text-[44px] font-semibold leading-[1.05] tracking-[-0.02em] lg:whitespace-nowrap md:text-[72px] lg:text-[96px]">
               {cx('title')}
             </h1>
-            <p className="mt-6 max-w-2xl text-[15px] leading-[1.5] tracking-[-0.18px] text-white/60 md:text-[18px]">
+            <p className="mt-6 max-w-2xl whitespace-pre-line text-[14px] leading-[1.6] tracking-[-0.18px] text-white/70 md:text-[16px]">
               {cx('description')}
             </p>
           </div>
         </div>
       </section>
 
-      {/* 3 Point cards — rise up to overlap the hero (negative margin) so the
-          hero's gradient bleeds through this section's TRANSPARENT top, then it
-          deepens to black toward the bottom to flow into the brand video that
-          follows. Result: a seamless hero → cards → video colour transition. */}
-      <section
-        className="relative z-10 -mt-48 pb-16 pt-24 md:-mt-64 md:pb-20 md:pt-36"
-        style={{
-          background:
-            'linear-gradient(to bottom, rgba(0,0,0,0) 0px, #000000 340px)',
-        }}
-      >
-        <div className="mx-auto grid max-w-[1440px] grid-cols-1 gap-3 px-6 md:grid-cols-3 md:gap-4 lg:px-10">
-          {POINT_CARDS.map((n) => (
-            <div
-              key={n}
-              className="aspect-[55/71] overflow-hidden bg-[#0c0a20] bg-cover bg-center"
-              style={{ backgroundImage: `url(/sound360/point-${n}.png)` }}
-            />
-          ))}
-        </div>
-      </section>
-
-      {/* Hero — brand video (YouTube embed player), full-width like agstudio */}
-      <section className="w-full overflow-hidden bg-black">
-        <YouTubeEmbed
-          id="FE-XGEdusDw"
-          title={cx('title')}
-          className="mx-auto max-w-[1600px]"
-        />
-      </section>
-
-      {/* DISCOGRAPHY */}
-      <section className="mx-auto max-w-[1440px] px-6 pt-40 lg:px-10">
-        <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
-          {cx('discography')}
-        </h2>
-        <div className="mt-10 flex items-center justify-between">
-          <p className="text-[15px] font-medium tracking-[-0.18px] text-foreground md:text-[18px]">
-            {cx('selectedAlbums')}
-          </p>
-          {/* 임시 숨김: discography "더보기" 버튼 (복구하려면 주석 해제 + 상단 Link import 복구)
-          <Link
-            href="/discography?brand=sound360"
-            className="text-[15px] font-medium tracking-[-0.15px] text-tertiary underline-offset-4 hover:text-foreground hover:underline"
-          >
-            {tCommon("viewMore")}
-          </Link>
-          */}
-        </div>
-
-        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
-          {discography.map((entry) => {
-            const cover = imageUrl(entry.cover, 600, 600);
-            return (
-              <div key={entry._id} className="flex flex-col gap-3">
-                <div className="relative h-[200px] overflow-hidden bg-background-white md:h-[260px]">
-                  {cover ? (
-                    <Image
-                      src={cover}
-                      alt={entry.cover?.alt ?? entry.title}
-                      fill
-                      sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
-                      className="object-cover"
-                    />
-                  ) : null}
-                </div>
-                <div className="flex flex-col gap-0.5">
-                  <div className="text-lg font-medium leading-[1.5] tracking-[-0.22px] text-foreground md:text-[22px]">
-                    {entry.title}
-                  </div>
-                  <div className="text-[13px] tracking-[-0.13px] text-tertiary">
-                    {entry.artist}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </section>
-
-      {/* Work scope — service icon cards (Figma Frame 203) */}
+      {/* ② 작업 내용 및 범위 — service icon cards */}
       <section
         data-reveal
-        className="mx-auto max-w-[1440px] px-6 pt-40 lg:px-10"
+        className="mx-auto max-w-7xl px-8 pt-24 md:pt-44 lg:px-14"
       >
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx('workScope')}
         </h2>
         <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
-          {SERVICES.map((s, i) => (
+          {SERVICES.map((s) => (
             <div key={s.key} className="flex flex-col gap-3">
-              <div
-                className="relative aspect-[82/65] overflow-hidden bg-[#0a0b14] bg-cover bg-center"
-                style={{ backgroundImage: `url(/sound360/icon-${i + 1}.png)` }}
-              >
-                {s.fg ? (
-                  <div
-                    aria-hidden
-                    className="absolute left-1/2 top-1/2 aspect-square -translate-x-1/2 -translate-y-1/2 bg-contain bg-center bg-no-repeat"
-                    style={{
-                      width: `${s.fgSize}%`,
-                      opacity: s.fgOpacity,
-                      backgroundImage: `url(/sound360/${s.fg})`,
-                    }}
-                  />
-                ) : null}
+              <div className="relative flex aspect-[82/65] items-center justify-center overflow-hidden bg-black">
+                {/* 검은 박스에 아이콘/그래픽을 가운데 축소 배치 (4칸 통일) */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/sound360/${s.img}`}
+                  alt=""
+                  style={{ maxHeight: `${s.maxH}%` }}
+                  className="max-w-[85%] object-contain"
+                />
               </div>
               <div className="flex flex-col gap-0.5 text-center">
-                <p className="text-lg font-bold tracking-[-0.22px] text-foreground md:text-[22px]">
+                <p className="text-[16px] font-semibold tracking-[-0.18px] text-foreground md:text-[18px]">
                   {cx(s.key)}
                 </p>
-                <p className="text-[13px] font-medium tracking-[-0.13px] text-foreground/45">
+                <p className="text-[13px] font-medium leading-[1.4] tracking-[-0.13px] text-foreground/45">
                   {cx(`${s.key}Desc`)}
                 </p>
               </div>
@@ -272,21 +202,18 @@ export default async function Sound360Page({
         </div>
       </section>
 
-      {/* STUDIO (dark) */}
-      <section className="mt-40 bg-[#121318] py-20 text-white md:py-24">
-        <div className="mx-auto max-w-[1440px] px-6 lg:px-10">
+      {/* ③ STUDIO (dark) */}
+      <section className="mt-24 md:mt-44 bg-[#121318] py-20 text-white md:py-24">
+        <div className="mx-auto max-w-7xl px-8 lg:px-14">
           <div className="grid grid-cols-1 items-start gap-x-5 gap-y-6 md:grid-cols-2">
             <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
               {cx('studio')}
             </h2>
             <div>
-              <p className="text-[15px] leading-normal tracking-[-0.15px] text-disabled">
-                {cx('studioSubKr')}
-              </p>
-              <p className="mt-3 text-lg font-semibold leading-[1.4] tracking-[-0.23px] md:text-[23px]">
+              <p className="text-lg font-semibold leading-[1.4] tracking-[-0.23px] md:text-[23px]">
                 {cx('studioTitle')}
               </p>
-              <p className="mt-1 max-w-md text-[15px] font-medium leading-[1.4] tracking-[-0.18px] text-white/80 md:text-[18px]">
+              <p className="mt-3 max-w-md text-[15px] font-medium leading-[1.4] tracking-[-0.18px] text-white/80 md:text-[18px]">
                 {cx('studioBody')}
               </p>
             </div>
@@ -303,8 +230,77 @@ export default async function Sound360Page({
         </div>
       </section>
 
-      {/* OUR TEAM */}
-      <section className="mx-auto max-w-[1440px] px-6 pt-40 lg:px-10">
+      {/* ④ DISCOGRAPHY (+ XR 카테고리) */}
+      <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-44 lg:px-14">
+        <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
+          {cx('discography')}
+        </h2>
+        <div className="mt-10 flex items-center justify-between">
+          <p className="text-[15px] font-medium tracking-[-0.18px] text-foreground md:text-[18px]">
+            {cx('selectedAlbums')}
+          </p>
+        </div>
+
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+          {discography.map((entry) => {
+            const cover = imageUrl(entry.cover, 600, 600);
+            return (
+              <div key={entry._id} className="flex flex-col gap-3">
+                <div className="relative aspect-square overflow-hidden bg-background-white">
+                  {cover ? (
+                    <Image
+                      src={cover}
+                      alt={entry.cover?.alt ?? entry.title}
+                      fill
+                      sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+                      className="object-cover"
+                    />
+                  ) : null}
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <div className="text-[15px] font-medium leading-[1.5] tracking-[-0.18px] text-foreground md:text-[18px]">
+                    {entry.title}
+                  </div>
+                  <div className="text-[13px] tracking-[-0.13px] text-tertiary">
+                    {entry.artist}
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* XR 카테고리 */}
+        <p className="mt-14 text-[15px] font-medium tracking-[-0.18px] text-foreground md:text-[18px]">
+          XR
+        </p>
+        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+          {XR_WORKS.map((w) => (
+            <div key={w.title} className="flex flex-col gap-3">
+              <div className="relative aspect-square overflow-hidden bg-background-white">
+                <Image
+                  src={w.src}
+                  alt={`${w.artist} - ${w.title}`}
+                  fill
+                  sizes="(min-width: 1024px) 25vw, (min-width: 640px) 33vw, 50vw"
+                  className="object-cover"
+                />
+              </div>
+              <div className="flex flex-col gap-0.5">
+                <div className="text-[15px] font-medium leading-[1.5] tracking-[-0.18px] text-foreground md:text-[18px]">
+                  {w.title}
+                </div>
+                <div className="text-[13px] tracking-[-0.13px] text-tertiary">
+                  {w.artist}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ⑤ OUR TEAM */}
+      <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-44 lg:px-14">
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx('ourTeam')}
         </h2>
@@ -312,10 +308,38 @@ export default async function Sound360Page({
           members={team}
           slots={images}
           bioFallback={tCommon('comingSoon')}
+          portrait
+          columns={4}
+          gapClass="gap-6 md:gap-12"
         />
       </section>
 
-      <ContactCta />
+      {/* ⑥ 소개 영상 + 위치 — 2분할: 왼쪽 브랜드 영상, 오른쪽 네이버 지도 */}
+      <section className="mt-24 md:mt-44 w-full overflow-hidden">
+        <div className="mx-auto max-w-7xl px-8 lg:px-14">
+          {/* 영상은 좌측 끝선, 지도는 우측 끝선에 붙이고 가운데를 띄운다 */}
+          <div className="flex flex-col gap-8 lg:flex-row lg:items-stretch lg:justify-between">
+            {/* 왼쪽: 영상 — 16:9, 가로형 지도와 같은 높이를 채움 */}
+            <div className="flex items-center bg-black lg:w-[56%]">
+              <YouTubeEmbed id="FE-XGEdusDw" title={cx('title')} />
+            </div>
+            {/* 오른쪽: 지도 — 우측 그리드 끝선에 고정, 가로로 긴 4:3 비율로 고정.
+                폭 40% × 3/4 = 높이 30% → 영상 16:9 높이(30%)와 정확히 일치 */}
+            <div className="relative aspect-[4/3] w-full lg:w-[42%]">
+              <iframe
+                src={SOUND360_GMAP_EMBED}
+                title={SOUND360_ADDRESS}
+                loading="lazy"
+                referrerPolicy="no-referrer-when-downgrade"
+                className="absolute inset-0 h-full w-full border-0"
+              />
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* ⑦ CONTACT — 주소 + 지도 링크 추가 */}
+      <ContactCta address={SOUND360_ADDRESS} mapHref={SOUND360_MAP_HREF} />
       <SectionReveal />
     </>
   );

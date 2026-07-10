@@ -74,7 +74,7 @@ export default async function DiscographyPage({
 
   return (
     <>
-      <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-28 lg:px-14">
+      <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-32 lg:px-14">
         <div className="grid grid-cols-1 gap-x-12 gap-y-4 md:grid-cols-[280px_1fr]">
           <div>
             <p className="text-[11px] font-medium uppercase tracking-[0.25em] text-foreground/45">

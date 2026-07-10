@@ -1,484 +1,386 @@
+import Image from "next/image";
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { ContactCta } from "@/components/ContactCta";
-import {
-  PeopleCarousel,
-  type PeopleMember,
-} from "@/components/PeopleCarousel";
-import { RevealCards } from "@/components/RevealCards";
 import { SectionReveal } from "@/components/SectionReveal";
 import { SlotImage } from "@/components/SlotImage";
+import { HoverVideoEmbed } from "@/components/HoverVideoEmbed";
+import { type ServiceItem } from "@/components/ServiceAccordion";
+import { TeamGrid, type TeamMember } from "@/components/TeamGrid";
+// 임시 숨김: discography "더보기" 버튼 주석 처리로 Link 미사용 (복구 시 주석 해제)
+// import { Link } from "@/i18n/navigation";
 import { contentResolver, getPageContent } from "@/lib/pageContent";
-import { getPageImages } from "@/lib/pageImages";
+import { findSlot, getPageImages, imageUrl } from "@/lib/pageImages";
+import { sanityFetch } from "@/sanity/lib/fetch";
+import { brandRecentDiscographyQuery } from "@/sanity/lib/queries";
+import type { DiscographyEntry } from "@/sanity/types";
 
-const STUDIO_IMAGES = ["/about/studio-1.jpg", "/about/studio-2.jpg"];
-
-// About hero glow — Figma Frame 20 (1920×660): a soft base ellipse, two mirrored
-// ripple "Union" rings, and three blue/purple glow ellipses. Reproduced from the
-// original Figma SVGs, positioned/sized as % of the full 1920×660 frame
-// (aspect 32:11) so a full-bleed w-full stage reproduces the design edge-to-edge.
-// Heights are % of 660; widths/x are % of 1920. Order is back→front.
-const G = "/about/hero";
-const HERO_GLOW: {
-  src: string;
-  w: number;
-  h: number;
-  x: number;
-  y: number;
-  flip?: boolean;
-}[] = [
-  { src: "ellipse3", w: 84.48, h: 132.42, x: 50, y: 50 },
-  { src: "union", w: 39.57, h: 112.69, x: 41.58, y: 49.92 },
-  { src: "union", w: 39.57, h: 112.69, x: 60.1, y: 49.92, flip: true },
-  { src: "ellipse1", w: 32.29, h: 93.94, x: 46.35, y: 50 },
-  { src: "ellipse4", w: 32.29, h: 93.94, x: 63.54, y: 52.42 },
-  { src: "ellipse2", w: 37.5, h: 109.09, x: 53.23, y: 50 },
-];
-
-// The Heritage — company milestones grouped by year, newest first (Figma
-// "Timeline"). `highlight` marks the major achievements (filled marker + bold);
-// `sub` holds nested detail lines (e.g. 2023's sub-projects).
-type HeritageItem = { text: string; highlight?: boolean };
-const HERITAGE: { year: string; items: HeritageItem[] }[] = [
-  {
-    year: "2026",
-    items: [
-      { text: "예술경영지원센터 성장도약 프로그램 선정", highlight: true },
-      {
-        text: "한국콘텐츠진흥원 인공지능콘텐츠 제작지원사업 선정 (협력형)",
-        highlight: true,
-      },
-    ],
-  },
-  {
-    year: "2025",
-    items: [
-      { text: "K-Culture R&D 사업 선정" },
-      { text: "자체 AI 공간음향 제작엔진 AI-SPHR 1단계 개발 완료", highlight: true },
-      { text: "CES 2026 피칭 완료 (HAVAS, LIB MGMT 등 다수 기업 후속 진행)" },
-      {
-        text: "일본 4대 메이저 테이크엔터 100곡 초도 계약 완료 (500만 엔)",
-        highlight: true,
-      },
-      { text: "T-Square 16트랙 수급·제작 착수, 3월 릴리스 계약 완료", highlight: true },
-      { text: "Dolby Japan 시연 진행, 500만 엔 딜 소싱" },
-      { text: "한국콘텐츠진흥원 신기술융합콘텐츠 데모데이 장려상 수상", highlight: true },
-    ],
-  },
-  {
-    year: "2024",
-    items: [
-      { text: "TIPS 선정" },
-      {
-        text: "메이브, 플레이브, 리센느, tripleS, Naevis, (G)I-DLE 등 K-POP 아티스트 공간음향 작업",
-      },
-      { text: "예술경영지원센터 창업도약 지원사업 선정, 우수 판정", highlight: true },
-      { text: "한국콘텐츠진흥원 뮤직테크 지원사업" },
-      { text: "투자유치 SEED 7억 원 (킹슬리벤처스, CNT TECH)" },
-      { text: "광주 음악창작소 뮤지션 제작지원 / 인큐베이팅 사업 운영 (3년 연속)" },
-      { text: "한국콘텐츠진흥원 KNOCK 최우수상 수상" },
-      {
-        text: "Apple Vision Pro용 공간음향 라디오 스트리밍 애플리케이션 AUDIOSPHR lite 버전 출시",
-        highlight: true,
-      },
-    ],
-  },
-  {
-    year: "2023",
-    items: [
-      { text: "한국콘텐츠진흥원 신기술 콘텐츠랩 운영" },
-      { text: "한국콘텐츠진흥원 신기술 융합 온·오프라인 공연사업 수행" },
-      { text: "전라북도 레드로드 음악창작소 음원·음반 제작 및 유통지원 운영용역 수행" },
-      { text: "서울시향 공간음향 라이브 스트리밍 (예술의전당 콘서트홀)" },
-    ],
-  },
-];
-
-function SectionHeader({
-  label,
-  title,
-  description,
-}: {
-  label: string;
-  title: string;
-  description?: string;
-}) {
-  return (
-    <div>
-      <p className="text-xs uppercase leading-normal tracking-[-0.12px] text-secondary">
-        {label}
-      </p>
-      <div className="mt-3 grid grid-cols-1 items-end gap-x-5 gap-y-3 md:grid-cols-2">
-        <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] text-foreground md:text-[40px] md:leading-[1.2]">
-          {title}
-        </h2>
-        {description ? (
-          <p className="text-[15px] leading-normal tracking-[-0.18px] text-secondary md:text-[18px]">
-            {description}
-          </p>
-        ) : null}
-      </div>
-    </div>
-  );
-}
-
-export default async function AboutPage({
+export default async function AudioguyPage({
   params,
 }: {
   params: Promise<{ locale: string }>;
 }) {
   const { locale } = await params;
   setRequestLocale(locale);
-  const t = await getTranslations("About");
-  const tCommon = await getTranslations("Common");
-  const c = await getPageContent("aboutPage");
-  const cx = contentResolver(c, locale, t);
-  const { images } = await getPageImages("aboutPage");
 
-  // 김소이(member3) 제외 — 노출 멤버: 최정훈·이동주·오대규·안범현
-  const people: PeopleMember[] = [1, 2, 4, 5].map((i) => ({
-    slotKey: `team-${i}`,
-    fallbackSrc: `/about/team-${i}.jpg`,
-    name: cx(`people.member${i}Name`),
-    role: cx(`people.member${i}Role`),
-  }));
+  const t = await getTranslations("Audioguy");
+  const tCommon = await getTranslations("Common");
+  const c = await getPageContent("audioguyPage");
+  const cx = contentResolver(c, locale, t);
+  const { images } = await getPageImages("audioguyPage");
+
+  // Discography preview: the 5 most recently added audioguy-brand entries.
+  // Managed in Sanity Studio (Discography Entry docs, brand="audioguy").
+  const discography = await sanityFetch<DiscographyEntry[]>({
+    query: brandRecentDiscographyQuery,
+    params: { brand: "audioguy", limit: 5 },
+    tags: ["discographyEntry", "brand:audioguy"],
+  }).catch(() => []);
+
+  // Location Recording 협업/녹음 기관 로고 (4열 × 2행). 파일: /public/audioguy/location-logos/.
+  // 각 원본은 흰 배경 여백을 트림해 콘텐츠로 맞춤.
+  const LOCATION_LOGOS = [
+    { file: "incheon-phil.png", alt: "인천시립교향악단" },
+    { file: "cheonan-phil.png", alt: "천안시립교향악단" },
+    { file: "goyang-choir.png", alt: "고양시립합창단" },
+    { file: "arte.png", alt: "한경 arte" },
+    { file: "national-symphony.svg", alt: "국립심포니오케스트라" },
+    { file: "incheon-chorale.png", alt: "인천시립합창단" },
+    { file: "kno.png", alt: "국립오페라단" },
+    { file: "gwangju-symphony.png", alt: "광주시립교향악단" },
+    { file: "suwon-phil.png", alt: "수원시립교향악단" },
+  ] as const;
+
+  // Location Recording은 아코디언에서 분리해 아래 단독 섹션으로 렌더한다.
+  const services: ServiceItem[] = [
+    {
+      id: "studioRec",
+      title: cx("studioRecording"),
+      label: cx("studioRecLabel"),
+      titleEn: cx("studioRecTitleEn"),
+      subKr: cx("studioRecSubKr"),
+      images: [
+        { slotKey: "studioRec-1", alt: `${cx("studioRecording")} 1` },
+      ],
+    },
+    {
+      id: "mixing",
+      title: cx("mixingMaster"),
+      label: cx("mixingLabel"),
+      titleEn: cx("mixingTitleEn"),
+      subKr: cx("mixingSubKr"),
+      images: [
+        { slotKey: "mixing-2", alt: `${cx("mixingMaster")} 2` },
+      ],
+    },
+    // 임시 숨김: Demo Tape 아코디언 항목 (복구하려면 주석 해제)
+    // {
+    //   id: "demo",
+    //   title: cx("demoTape"),
+    //   label: tCommon("memoNeeded"),
+    //   images: [
+    //     { slotKey: "demo-1", alt: `${cx("demoTape")} 1` },
+    //     { slotKey: "demo-2", alt: `${cx("demoTape")} 2` },
+    //   ],
+    // },
+  ];
+
+  const team: TeamMember[] = [
+    {
+      name: cx("team1Name"),
+      role: cx("team1Role"),
+      slotKey: "team-1",
+      fallbackSrc: "/audioguy/team-1.jpg",
+      bio: [cx("team1Bullet1"), cx("team1Bullet2"), cx("team1Bullet3")],
+    },
+    {
+      name: cx("team2Name"),
+      role: cx("team2Role"),
+      slotKey: "team-2",
+      fallbackSrc: "/audioguy/team-2.jpg",
+      bio: [
+        cx("team2Bullet1"),
+        cx("team2Bullet2"),
+        cx("team2Bullet3"),
+        cx("team2Bullet4"),
+      ],
+    },
+    {
+      name: "오정석",
+      role: "어시스턴트",
+      slotKey: "team-3",
+      fallbackSrc: "/audioguy/team-3-ojs2.jpg",
+      bio: [
+        "고양시 음악창작소 스튜디오 음향감독",
+        "The Loud 스튜디오 음향감독",
+        "SynkOn Production 음향감독",
+        "재즈클럽 야누스 음향감독",
+        "다수 연극 플레이백 엔지니어",
+        "다수 인디밴드 레코딩/믹싱 엔지니어",
+      ],
+    },
+    {
+      name: "황수찬",
+      role: "어시스턴트",
+      slotKey: "team-4",
+      fallbackSrc: "/audioguy/team-4-hsc.jpg",
+      bio: ["2024년 ~ 하우스콘서트 녹음 감독"],
+    },
+  ];
 
   return (
     <>
-      {/* Hero — The Soul (Figma Frame 20): rounded glow card, white centered text */}
-      <section className="pt-2">
-        <div className="relative flex min-h-[420px] items-center justify-center overflow-hidden rounded-[20px] bg-background sm:min-h-[500px] md:min-h-[600px] lg:min-h-[660px]">
-          {/* Layered glow + ripple rings, centered on a fixed-aspect stage */}
+      {/* Hero — brand video + 반투명 레이어 + 타이틀 오버레이 */}
+      <section className="w-full overflow-hidden bg-black">
+        <div className="relative mx-auto max-w-[1600px]">
+          <HoverVideoEmbed id="Mf-rfCF3Neo" title={cx("heroAlt")} />
+          {/* 하단 그라데이션 디졸브 (Sound360 · Seoro 톤). pointer-events-none 로 호버 버튼/클릭 유지 */}
           <div
             aria-hidden
-            className="pointer-events-none absolute left-1/2 top-1/2 aspect-32/11 w-full -translate-x-1/2 -translate-y-1/2"
+            className="pointer-events-none absolute inset-0 bg-linear-to-b from-black/75 via-black/25 to-transparent"
+          />
+          {/* 타이틀 — Seoro · Sound360 히어로의 h1 위치(상단 패딩 + 라벨 아래)를 그대로 재현 */}
+          <div className="pointer-events-none absolute inset-0">
+            <div className="mx-auto w-full max-w-7xl px-6 pt-8 sm:px-8 sm:pt-16 lg:px-14 md:pt-36">
+              <p className="text-sm font-semibold tracking-[0.06em] text-white drop-shadow sm:text-lg md:text-[26px]">
+                AG STUDIO
+              </p>
+              <h1 className="mt-1.5 text-[30px] font-semibold leading-[1.05] tracking-[-0.02em] text-white drop-shadow-lg sm:mt-3 sm:text-[44px] md:mt-4 md:text-[72px] lg:text-[96px]">
+                Audioguy Studio
+              </h1>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* DISCOGRAPHY — brand "audioguy" entries from Sanity (managed in Studio
+          → Discography Entry, filtered to brand=audioguy, 5 most recent). */}
+      <section
+        className="py-28 md:py-40"
+        style={{
+          background:
+            "linear-gradient(135deg, #e7e3fb 0%, #dbe4fc 52%, #e4eefb 100%)",
+        }}
+      >
+        <div className="mx-auto max-w-7xl px-8 lg:px-14">
+        <h2 className="text-[34px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[52px]">
+          {cx("discography")}
+        </h2>
+        <div className="mt-10 flex items-center justify-between">
+          <p className="text-[15px] font-medium tracking-[-0.18px] text-foreground md:text-[18px]">
+            {cx("selectedAlbums")}
+          </p>
+          {/* 임시 숨김: discography "더보기" 버튼 (복구하려면 주석 해제 + 상단 Link import 복구)
+          <Link
+            href="/discography?brand=audioguy"
+            className="text-[15px] font-medium tracking-[-0.15px] text-tertiary underline-offset-4 hover:text-foreground hover:underline"
           >
-            {HERO_GLOW.map((g, i) => (
-              <div
-                key={i}
-                className="absolute"
-                style={{
-                  left: `${g.x}%`,
-                  top: `${g.y}%`,
-                  width: `${g.w}%`,
-                  height: `${g.h}%`,
-                  transform: `translate(-50%, -50%)${g.flip ? " scaleX(-1)" : ""}`,
-                  backgroundImage: `url(${G}/${g.src}.svg)`,
-                  backgroundSize: "100% 100%",
-                  backgroundRepeat: "no-repeat",
-                }}
-              />
-            ))}
-          </div>
-
-          {/* Text — white, positioned per Figma over the same stage */}
-          <div className="pointer-events-none absolute left-1/2 top-1/2 aspect-32/11 w-full -translate-x-1/2 -translate-y-1/2 text-white">
-            <div className="absolute left-1/2 top-[31.8%] flex -translate-x-1/2 -translate-y-1/2 flex-col items-center gap-1 text-center">
-              <p className="text-[11px] font-medium uppercase leading-[1.5] tracking-[-0.12px] text-white/60 md:text-xs">
-                {cx("hero.eyebrow")}
-              </p>
-              <p className="text-[28px] font-bold leading-[1.4] tracking-[-1.5px] md:text-[40px]">
-                {cx("hero.soul")}
-              </p>
-            </div>
-            <h1 className="absolute left-1/2 top-[45.2%] w-full -translate-x-1/2 -translate-y-1/2 px-6 text-center text-[30px] font-bold leading-[1.4] tracking-[-0.46px] md:text-[46px]">
-              {cx("hero.title")}
-            </h1>
-            <p className="absolute left-1/2 top-[55%] w-full -translate-x-1/2 -translate-y-1/2 px-6 text-center text-[18px] font-bold leading-[1.4] tracking-[-0.28px] text-white/60 md:text-[28px]">
-              {cx("hero.subtitle")}
-            </p>
-          </div>
+            {tCommon("viewMore")}
+          </Link>
+          */}
         </div>
-      </section>
-
-      {/* The Scale (Figma "Numbers") — decorative bg curve + frosted stat cards */}
-      <section data-reveal className="relative overflow-hidden pb-12 pt-32">
-        {/* Background: faint grid + purple/blue curve sweeping to the top-right,
-            constrained to the 1440 content width and centered (matches Figma frame) */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-y-0 left-1/2 w-full max-w-[1440px] -translate-x-1/2"
-          style={{
-            backgroundImage: "url(/about/scale-bg.png)",
-            backgroundSize: "cover",
-            backgroundPosition: "right top",
-            backgroundRepeat: "no-repeat",
-          }}
-        />
-        <div className="relative z-10 mx-auto max-w-[1440px] px-6 lg:px-10">
-          <SectionHeader
-            label={cx("scale.label")}
-            title={cx("scale.title")}
-            description={cx("scale.description")}
-          />
-          <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4 md:gap-6">
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="flex h-55 flex-col justify-between overflow-hidden border border-[#d2d3d5]/30 bg-[#f3f5f8]/70 p-8 backdrop-blur-[25px] md:h-[290px] md:p-10"
-              >
-                <p className="text-lg font-bold leading-[1.5] tracking-[-0.48px] text-foreground md:text-2xl">
-                  {cx(`scale.stat${i}Label`)}
-                </p>
-                <p className="w-full text-right text-[36px] font-bold leading-[1.2] tracking-[-1.04px] text-foreground md:text-[52px]">
-                  {cx(`scale.stat${i}Value`)}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* The Ecosystem */}
-      <section className="mx-auto max-w-[1440px] px-6 pt-40 lg:px-10">
-        <SectionHeader
-          label={cx("ecosystem.label")}
-          title={cx("ecosystem.title")}
-          description={cx("ecosystem.description")}
-        />
-        <div className="mt-10 grid grid-cols-1 gap-x-10 gap-y-8 md:grid-cols-[1fr_1.3fr]">
-          <div className="relative aspect-4/3 overflow-hidden md:aspect-auto md:h-full">
-            <SlotImage
-              slots={images}
-              slotKey="ecosystem"
-              fallbackSrc="/about/ecosystem.jpg"
-              alt="Audioguy ecosystem"
-              fill
-              sizes="(min-width: 768px) 40vw, 100vw"
-              className="object-cover"
-            />
-          </div>
-          <div>
-            {[1, 2, 3, 4].map((i) => (
-              <div
-                key={i}
-                className="grid grid-cols-[1fr_auto] items-center gap-6 border-b border-foreground/10 py-6"
-              >
-                <h3 className="text-3xl font-bold leading-[1.2] tracking-[-0.46px] text-foreground md:text-[46px]">
-                  {cx(`ecosystem.brand${i}Name`)}
-                </h3>
-                <p className="text-right text-[13px] leading-normal tracking-[-0.15px] text-secondary md:text-[15px]">
-                  {cx(`ecosystem.brand${i}Desc`)}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* The Heritage — centred zig-zag timeline of company milestones */}
-      <section className="mx-auto max-w-[1440px] px-6 pb-24 pt-48 md:pb-32 md:pt-56 lg:px-10">
-        <SectionHeader
-          label={cx("heritage.label")}
-          title={cx("heritage.title")}
-          description={cx("heritage.description")}
-        />
-        {/* Centred timeline: a rail down the middle (left edge on mobile), a
-            node per year, achievements alternating left/right of the rail and
-            hugging the centre. Years fade subtly toward the past. */}
-        <div className="relative mx-auto mt-16 max-w-[1080px] md:mt-24">
-          {/* Rail */}
-          <div
-            aria-hidden
-            className="absolute bottom-1 top-1 w-px bg-foreground/15 left-[5px] md:left-1/2 md:-translate-x-1/2"
-          />
-          <div className="flex flex-col gap-16 md:gap-24">
-            {HERITAGE.map((group, idx) => {
-              const left = idx % 2 === 1; // alternate sides on desktop
-              return (
-                // data-reveal: each year fades + rises in as it scrolls into
-                // view (handled by <SectionReveal />). `group` enables the
-                // node's hover response below.
-                <div key={group.year} data-reveal className="group relative">
-                  {/* Year node on the rail — grows when the row is hovered */}
-                  <span
-                    aria-hidden
-                    className="absolute top-[7px] z-10 h-[11px] w-[11px] rounded-full bg-foreground ring-4 ring-background transition-transform duration-300 ease-out group-hover:scale-[1.6] left-0 md:left-1/2 md:top-3 md:-translate-x-1/2"
-                  />
-                  {/* Content — full width past the left rail on mobile; one half,
-                      alternating, on desktop. */}
-                  <div
-                    className={`pl-7 md:w-1/2 md:pl-0 ${
-                      left ? "md:pr-14 md:text-right" : "md:ml-auto md:pl-14"
-                    }`}
-                  >
-                    <div
-                      className="text-[30px] font-bold leading-none tracking-[-0.46px] text-foreground md:text-[44px]"
-                      style={{ opacity: 1 - idx * 0.16 }}
-                    >
-                      {group.year}
-                    </div>
-                    <ul
-                      className={`mt-7 flex flex-col gap-5 md:gap-6 ${
-                        left ? "md:items-end" : ""
-                      }`}
-                    >
-                      {group.items.map((item, i) => (
-                        <li
-                          key={i}
-                          className={`flex flex-col gap-1.5 ${
-                            left ? "md:items-end" : ""
-                          }`}
-                        >
-                          <span className="max-w-lg cursor-default text-pretty break-keep text-[16px] font-medium leading-relaxed tracking-[-0.2px] text-secondary transition-colors duration-300 hover:text-foreground md:text-[18px]">
-                            {item.text}
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* Tech — 검증된 기술력 (Dark) */}
-      <section className="relative isolate mt-40 overflow-hidden bg-[#121318] py-64 text-white md:py-80">
-        {/* 위·아래 페이드: 다크 밴드를 위/아래 흰 배경과 자연스럽게 연결 */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 top-0 h-64 md:h-80"
-          style={{
-            background:
-              "linear-gradient(to bottom, #f7f9fa 0%, rgba(247,249,250,0.88) 16%, rgba(247,249,250,0.62) 34%, rgba(247,249,250,0.35) 52%, rgba(247,249,250,0.16) 70%, rgba(247,249,250,0.06) 85%, rgba(247,249,250,0) 100%)",
-          }}
-        />
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-x-0 bottom-0 h-64 md:h-80"
-          style={{
-            background:
-              "linear-gradient(to top, #f7f9fa 0%, rgba(247,249,250,0.88) 16%, rgba(247,249,250,0.62) 34%, rgba(247,249,250,0.35) 52%, rgba(247,249,250,0.16) 70%, rgba(247,249,250,0.06) 85%, rgba(247,249,250,0) 100%)",
-          }}
-        />
-        {/* 미세 노이즈(디더링): 8비트 그라데이션 밴딩(줄무늬)을 흩어 안 보이게 */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 z-0 opacity-40 mix-blend-soft-light"
-          style={{
-            backgroundImage:
-              "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E\")",
-          }}
-        />
-        <div className="relative z-10 mx-auto max-w-[1440px] px-6 lg:px-10">
-          <div className="grid grid-cols-1 items-start gap-x-5 gap-y-6 md:grid-cols-2">
-            <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
-              {cx("tech.title")}
-            </h2>
-            <div>
-              <p className="text-[15px] leading-normal tracking-[-0.15px] text-tertiary">
-                {cx("tech.subtitle")}
-              </p>
-              <p className="mt-3 text-lg font-semibold leading-[1.4] tracking-[-0.23px] md:text-[23px]">
-                {cx("tech.name")}
-              </p>
-              <p className="mt-3 max-w-md text-[15px] leading-[1.4] tracking-[-0.18px] text-white/66 md:text-[18px]">
-                {cx("tech.description")}
-              </p>
-            </div>
-          </div>
-
-          <div
-            aria-hidden
-            className="mt-10 aspect-[1360/600] w-full bg-cover bg-center bg-no-repeat"
-            style={{ backgroundImage: "url(/about/tech-sphere.svg)" }}
-          />
-
-          <RevealCards className="mt-3 grid grid-cols-1 gap-3 md:grid-cols-3">
-            {[1, 2, 3].map((i) => (
-              <div key={i} data-card className="bg-[#222328] p-7">
-                <p className="text-xl font-semibold tracking-[-0.24px] md:text-2xl">
-                  {cx(`tech.card${i}Title`)}
-                </p>
-                <p className="mt-2 text-[13px] leading-[1.4] tracking-[-0.15px] text-white/66 md:text-[15px]">
-                  {cx(`tech.card${i}Desc`)}
-                </p>
-              </div>
-            ))}
-          </RevealCards>
-        </div>
-      </section>
-
-      {/* The People */}
-      <section className="mx-auto max-w-[1440px] px-6 pt-40 lg:px-10">
-        <SectionHeader
-          label={cx("people.label")}
-          title={cx("people.title")}
-          description={cx("people.description")}
-        />
-        <div className="mt-10">
-          <PeopleCarousel
-            members={people}
-            slots={images}
-            prevLabel={tCommon("previous")}
-            nextLabel={tCommon("next")}
-          />
-        </div>
-      </section>
-
-      {/* The Proof — Partners orbit. 배경은 궤도 클러스터 + 그 뒤로 좌우로 퍼지는
-          동심원 리플 글로우(Figma Frame 146의 Group 24 + Group 10)를 한 장으로 합성한
-          에셋. 리플(폭 1620)이 콘텐츠(1360)보다 넓어 바깥으로 살짝 블리드하므로
-          섹션을 풀폭 + overflow-hidden으로 두고, 헤더만 콘텐츠 폭으로 정렬한다. */}
-      <section className="relative overflow-hidden pt-40">
-        <div className="mx-auto max-w-[1440px] px-6 lg:px-10">
-          <SectionHeader
-            label={cx("proof.label")}
-            title={cx("proof.title")}
-            description={cx("proof.description")}
-          />
-        </div>
-        <div
-          role="img"
-          aria-label="Partners & IP: NAXOS, TEICHIKU, KORG, Dolby Atmos, Genelec, Grammy Voting Member"
-          className="mx-auto mt-12 aspect-[1620/1026] w-full max-w-[1620px] bg-contain bg-center bg-no-repeat"
-          style={{ backgroundImage: "url(/about/partners.png)" }}
-        />
-      </section>
-
-      {/* The Presence — Studios (Figma "Studio": two centered cards) */}
-      <section data-reveal className="mx-auto max-w-[1440px] px-6 pt-40 lg:px-10">
-        <SectionHeader
-          label={cx("presence.label")}
-          title={cx("presence.title")}
-          description={cx("presence.description")}
-        />
-        <div className="mt-10 grid grid-cols-1 gap-4 sm:grid-cols-2 sm:gap-5">
-          {STUDIO_IMAGES.map((_img, idx) => {
-            const i = idx + 1; // caption position (1, 2)
-            const photo = 3 - i; // swapped photo: card 1 shows studio-2's image, card 2 shows studio-1's
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
+          {discography.map((entry) => {
+            const cover = imageUrl(entry.cover, 600, 600);
             return (
-              <div
-                key={i}
-                className="relative aspect-[57/50] overflow-hidden"
-              >
-                <SlotImage
-                  slots={images}
-                  slotKey={`studio-${photo}`}
-                  fallbackSrc={STUDIO_IMAGES[photo - 1]}
-                  alt={cx(`presence.studio${i}Name`)}
-                  fill
-                  sizes="(min-width: 640px) 460px, 100vw"
-                  className="object-cover"
-                />
-                <div className="absolute inset-0 bg-linear-to-t from-black/75 via-black/25 to-transparent" />
-                <div className="absolute inset-x-0 bottom-0 p-6 text-white md:p-10">
-                  <h3 className="text-xl font-semibold tracking-[-0.24px] md:text-2xl">
-                    {cx(`presence.studio${i}Name`)}
-                  </h3>
-                  <p className="mt-0.5 text-[13px] tracking-[-0.13px] text-white/80 md:text-[15px]">
-                    {cx(`presence.studio${i}DescKr`)}
-                  </p>
-                  <p className="mt-3 text-[13px] leading-relaxed tracking-[-0.13px] text-white/65 md:text-[15px]">
-                    {cx(`presence.studio${i}DescEn`)}
-                  </p>
+              <div key={entry._id} className="flex flex-col gap-3">
+                <div className="relative aspect-square overflow-hidden bg-background-white">
+                  {cover ? (
+                    <Image
+                      src={cover}
+                      alt={entry.cover?.alt ?? entry.title}
+                      fill
+                      sizes="(min-width: 1024px) 20vw, (min-width: 640px) 33vw, 50vw"
+                      className="object-cover"
+                    />
+                  ) : null}
+                </div>
+                <div className="flex flex-col gap-0.5">
+                  <div className="text-[15px] font-medium leading-[1.5] tracking-[-0.18px] text-foreground md:text-[18px]">
+                    {entry.title}
+                  </div>
+                  <div className="text-[13px] tracking-[-0.13px] text-tertiary">
+                    {entry.artist}
+                  </div>
                 </div>
               </div>
             );
           })}
         </div>
+        </div>
+      </section>
+
+      {/* Location Recording — 아코디언에서 분리한 단독 섹션 */}
+      <section className="mx-auto max-w-7xl px-8 pt-28 md:pt-48 lg:px-14">
+        <p className="text-xs uppercase leading-normal tracking-[-0.12px] text-secondary">
+          {cx("introduction")}
+        </p>
+        <div data-reveal className="mt-8 border-t border-foreground/10 pt-9 md:pt-12">
+          {/* 헤더: 제목 + 메타 (본문 제거) */}
+          <div className="mt-6 grid gap-x-5 gap-y-3 md:mt-10 md:grid-cols-2">
+            <h2 className="text-[34px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[52px]">
+              {cx("locationRecording")}
+            </h2>
+            <div>
+              <p className="text-[15px] leading-normal tracking-[-0.15px] text-tertiary">
+                {cx("locationLabel")}
+              </p>
+              <p className="mt-3 text-lg font-semibold leading-[1.4] tracking-[-0.23px] text-foreground md:text-[23px]">
+                {cx("locationTitleEn")}
+              </p>
+              <p className="mt-1 text-[15px] font-medium leading-[1.4] tracking-[-0.18px] text-secondary md:text-[18px]">
+                {cx("locationSubKr")}
+              </p>
+            </div>
+          </div>
+
+          {/* 왼쪽: 현장 사진 / 오른쪽: 협업·녹음 기관 로고 그리드 */}
+          <div className="mt-16 grid items-stretch gap-10 md:mt-20 md:grid-cols-2 md:gap-12">
+            {/* 사진 (왼쪽) — 높이를 오른쪽 로고 그리드(3행)에 맞춤 */}
+            <div className="relative aspect-[4/3] overflow-hidden bg-foreground/3 md:aspect-auto md:h-full">
+              <SlotImage
+                slots={images}
+                slotKey="location-photo"
+                fallbackSrc="/audioguy/location-logos/IMG_2045.jpg"
+                alt={cx("locationRecording")}
+                fill
+                sizes="(min-width: 768px) 45vw, 100vw"
+                className="object-cover"
+              />
+            </div>
+            {/* 로고: 오른쪽 절반, 4열 × 2행. 흰 슬롯에 가운데 정렬 */}
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+              {LOCATION_LOGOS.map((logo) => (
+                <div
+                  key={logo.file}
+                  className="flex aspect-[16/10] items-center justify-center rounded-lg border border-foreground/10 bg-white p-4"
+                >
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={`/audioguy/location-logos/${logo.file}`}
+                    alt={logo.alt}
+                    className="max-h-[85%] max-w-[90%] object-contain"
+                  />
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {/* Studio Recording · Mixing & Mastering — 각 서비스를 풀폭 한 줄로:
+            텍스트 + 큰 사진 1장을 좌우로 배치, 두 서비스는 좌우를 번갈아 놓는다. */}
+        <div className="mt-32 flex flex-col gap-16 md:mt-40 md:gap-20">
+          {services.map((item, idx) => {
+            const flip = idx % 2 === 1; // 두 번째 서비스는 사진을 왼쪽으로
+            const img = item.images?.[0];
+            const hasImage =
+              !!img &&
+              (!!imageUrl(findSlot(images, img.slotKey)?.image) ||
+                !!img.fallbackSrc);
+            return (
+              <div
+                key={item.id}
+                data-reveal
+                className="border-t border-foreground/10 pt-9 md:pt-12"
+              >
+                <div className="grid items-center gap-8 md:grid-cols-2 md:gap-14">
+                  {/* 텍스트 — flip(오른쪽 배치)일 때 우측 끝으로 밀어 양 끝 느낌 */}
+                  <div className={flip ? "md:order-2 md:text-right" : ""}>
+                    <h2 className="text-[34px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[52px]">
+                      {item.title}
+                    </h2>
+                    {item.label ? (
+                      <p className="mt-6 text-[15px] leading-normal tracking-[-0.15px] text-tertiary">
+                        {item.label}
+                      </p>
+                    ) : null}
+                    {item.titleEn ? (
+                      <p className="mt-3 text-lg font-semibold leading-[1.4] tracking-[-0.23px] text-foreground md:text-[23px]">
+                        {item.titleEn}
+                      </p>
+                    ) : null}
+                    {item.subKr ? (
+                      <p className="mt-1 text-[15px] font-medium leading-[1.4] tracking-[-0.18px] text-secondary md:text-[18px]">
+                        {item.subKr}
+                      </p>
+                    ) : null}
+                  </div>
+                  {/* 사진 1장 */}
+                  {img ? (
+                    <div
+                      className={`relative aspect-4/3 w-full overflow-hidden bg-foreground/3 md:max-w-sm ${
+                        flip ? "md:order-1 md:mr-auto" : "md:ml-auto"
+                      }`}
+                    >
+                      {hasImage ? (
+                        <SlotImage
+                          slots={images}
+                          slotKey={img.slotKey}
+                          fallbackSrc={img.fallbackSrc}
+                          alt={img.alt}
+                          fill
+                          sizes="(min-width: 768px) 384px, 100vw"
+                          className="object-cover"
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                          <span className="text-sm font-semibold text-red-500">
+                            {tCommon("imageNeeded")}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  ) : null}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* STUDIO — 위 '작업 내용' 그룹과 분리되도록 풀폭 화이트 밴드 */}
+      <section className="mt-28 bg-background-white py-28 md:mt-48 md:py-40">
+        <div className="mx-auto max-w-7xl px-8 lg:px-14">
+          <div className="grid grid-cols-1 items-start gap-x-5 gap-y-6 md:grid-cols-2">
+          <h2 className="text-[34px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[52px]">
+            {cx("studio")}
+          </h2>
+          <div>
+            <p className="text-[15px] leading-normal tracking-[-0.15px] text-tertiary">{cx("studioSubKr")}</p>
+            <p className="mt-3 text-lg font-semibold leading-[1.4] tracking-[-0.23px] text-foreground md:text-[23px]">
+              {cx("studioName")}
+            </p>
+            <p className="mt-3 max-w-xl text-[15px] leading-[1.4] tracking-[-0.18px] text-secondary md:text-[18px]">
+              {cx("studioBody")}
+            </p>
+          </div>
+        </div>
+          <div className="relative mt-10 aspect-video w-full overflow-hidden">
+            <SlotImage
+              slots={images}
+              slotKey="piano"
+              fallbackSrc="/audioguy/piano.jpg"
+              alt={cx("studioName")}
+              fill
+              sizes="100vw"
+              className="object-cover"
+            />
+          </div>
+        </div>
+      </section>
+
+      {/* OUR TEAM (Figma Frame 206) */}
+      <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-44 lg:px-14">
+        <h2 className="text-[34px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[52px]">
+          {cx("ourTeam")}
+        </h2>
+        <TeamGrid
+          members={team}
+          slots={images}
+          bioFallback={tCommon("comingSoon")}
+          columns={4}
+          portrait
+        />
       </section>
 
       <ContactCta />

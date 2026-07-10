@@ -47,31 +47,31 @@ export default async function ContactPage({
   const phone = settings?.contactPhone ?? "02-734-3348";
 
   return (
-    <section className="mx-auto max-w-[1440px] px-10 py-20">
+    <section className="mx-auto max-w-[1440px] px-6 py-16 md:px-10 md:py-20">
       <div className="grid grid-cols-1 items-stretch gap-10 md:grid-cols-2">
-        {/* Exact Figma left card (glow + email/call) as an image; the email/call
-            are baked in, so invisible overlay links keep them clickable. */}
+        {/* Figma 좌측 카드: 글로우는 래스터 에셋, 이메일·전화는 실제 텍스트로 렌더
+            (이전엔 텍스트가 PNG에 합성돼 흐릿하게 보였음). */}
         <div
           className="relative min-h-[480px] overflow-hidden rounded-[20px] bg-cover bg-center md:min-h-[580px]"
           style={{ backgroundImage: "url(/contact/card-left.png)" }}
         >
           <div className="absolute inset-0 flex items-center justify-center px-6">
-            <div className="flex flex-wrap items-center justify-center gap-x-[50px] gap-y-3 text-[18px] tracking-[-0.18px] text-transparent">
+            <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3 text-[15px] md:gap-x-[50px] md:text-[18px] font-medium tracking-[-0.18px]">
               <a
                 href={`mailto:${email}`}
                 aria-label={`${tCta("email")} ${email}`}
                 className="flex items-center gap-3 whitespace-nowrap"
               >
-                <span>{tCta("email")}</span>
-                <span>{email}</span>
+                <span className="text-tertiary">{tCta("email")}</span>
+                <span className="text-black">{email}</span>
               </a>
               <a
                 href={`tel:${phone.replace(/\D/g, "")}`}
                 aria-label={`${tCta("call")} ${phone}`}
                 className="flex items-center gap-3 whitespace-nowrap"
               >
-                <span>{tCta("call")}</span>
-                <span>{phone}</span>
+                <span className="text-tertiary">{tCta("call")}</span>
+                <span className="text-black">{phone}</span>
               </a>
             </div>
           </div>

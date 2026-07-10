@@ -69,7 +69,7 @@ export function MobileMenu({
                 key={item.href}
                 href={item.href}
                 onClick={() => setOpen(false)}
-                className="text-foreground/80 transition-colors hover:text-foreground"
+                className="uppercase text-foreground/80 transition-colors hover:text-foreground"
               >
                 {item.label}
               </Link>

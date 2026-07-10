@@ -19,7 +19,7 @@ export default async function SiteLayout({
     <div className="flex min-h-screen flex-col">
       <Header siteName={settings?.siteName} />
       <main className="flex-1">{children}</main>
-      <Footer settings={settings} />
+      {/* <Footer settings={settings} /> */}
       <FloatingContact />
     </div>
   );

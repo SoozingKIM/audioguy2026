@@ -2,7 +2,7 @@ export const BRANDS = [
   {
     value: "audioguy",
     label: "Audioguy",
-    href: "/audioguy",
+    href: "/about",
     color: "bg-emerald-500",
   },
   {

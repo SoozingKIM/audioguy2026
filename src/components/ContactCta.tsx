@@ -2,7 +2,15 @@ import { getTranslations } from "next-intl/server";
 
 import { Link } from "@/i18n/navigation";
 
-export async function ContactCta() {
+export async function ContactCta({
+  address,
+  mapHref,
+}: {
+  /** 페이지별 주소 (옵션). 전달 시 이메일·전화 옆에 표시. */
+  address?: string;
+  /** 주소를 누르면 열리는 지도 링크 (네이버/구글). */
+  mapHref?: string;
+} = {}) {
   const t = await getTranslations("Cta");
 
   return (
@@ -25,6 +33,23 @@ export async function ContactCta() {
               <span className="text-tertiary">{t("call")}</span>
               <span className="text-black">02-734-3348</span>
             </div>
+            {address ? (
+              <div className="flex items-center gap-3">
+                <span className="text-tertiary">{t("location")}</span>
+                {mapHref ? (
+                  <a
+                    href={mapHref}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-black underline-offset-4 hover:underline"
+                  >
+                    {address}
+                  </a>
+                ) : (
+                  <span className="text-black">{address}</span>
+                )}
+              </div>
+            ) : null}
           </div>
           <Link
             href="/contact"

@@ -20,8 +20,8 @@ type BrandCard = {
 
 const C = "/home/cards";
 const BRAND_CARDS: BrandCard[] = [
-  { href: "/audioguy", key: "audioguy", image: `${C}/audioguy-card.png` },
-  { href: "/agstudio", key: "agstudio", image: `${C}/agstudio-card.png` },
+  { href: "/about", key: "audioguy", image: `${C}/audioguy-card.png` },
+  { href: "/audioguy", key: "agstudio", image: `${C}/agstudio-card.png` },
   { href: "/sound360", key: "sound360", image: `${C}/sound360-card.png` },
   { href: "/seoro", key: "seoro", image: `${C}/seoro-card.png` },
 ];
@@ -59,7 +59,7 @@ export default async function HomePage({
         </div>
         {/* pointer-events-none so the empty left column doesn't intercept the
             galaxy's pointer tracking; the text block re-enables events. */}
-        <div className="pointer-events-none relative z-10 mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-y-6 px-10 py-24 md:grid-cols-2">
+        <div className="pointer-events-none relative z-10 mx-auto grid w-full max-w-[1440px] grid-cols-1 gap-y-6 px-6 md:px-10 py-24 md:grid-cols-2">
           <div className="pointer-events-auto md:col-start-2">
             <h1 className="text-[40px] font-bold leading-[1.2] tracking-[-1.3px] text-foreground md:text-[56px] md:tracking-[-1.8px]">
               {cx("heroTitle1", "hero.title1")}
@@ -76,7 +76,7 @@ export default async function HomePage({
       </section>
 
       {/* 2x2 Brand Cards — reproduced from Figma frames 177 / 186 */}
-      <section className="mx-auto max-w-[1440px] px-10 py-12">
+      <section className="mx-auto max-w-[1440px] px-6 md:px-10 py-12">
         <RevealCards className="grid grid-cols-1 gap-5 md:grid-cols-2">
           {BRAND_CARDS.map((card) => (
             <Link
@@ -107,7 +107,7 @@ export default async function HomePage({
                 <h2 className="text-[22px] font-semibold leading-[1.4] tracking-[-0.32px] md:text-[28px]">
                   {cx(`${card.key}Label`, `cards.${card.key}.label`)}
                 </h2>
-                <p className="mt-1.5 max-w-md text-[13px] leading-[1.4] tracking-[-0.18px] text-white/60 md:text-[16px]">
+                <p className="mt-1.5 max-w-md whitespace-pre-line text-[13px] leading-[1.4] tracking-[-0.18px] text-white/60 md:text-[16px]">
                   {cx(`${card.key}Desc`, `cards.${card.key}.description`)}
                 </p>
               </div>
@@ -119,19 +119,35 @@ export default async function HomePage({
       {/* Brand Overview */}
       <section
         data-reveal
-        className="mx-auto max-w-[1440px] px-10 py-28 text-center"
+        className="mx-auto max-w-[1440px] px-6 md:px-10 py-28 text-center md:py-40 lg:py-52"
       >
         <p className="text-[16px] font-medium tracking-[-0.16px] text-tertiary">
           {cx("overviewLabel", "overview.label")}
         </p>
-        <h2 className="mt-3.5 text-balance text-2xl font-semibold leading-[1.4] tracking-[-0.32px] text-foreground md:text-[32px]">
+        <h2 className="mt-4 text-balance text-[30px] font-semibold leading-[1.3] tracking-[-0.4px] text-foreground md:text-[44px]">
           {cx("overviewTitle", "overview.title")}
         </h2>
-        <div className="mt-3.5 space-y-7 text-balance text-[16px] font-medium leading-[1.4] tracking-[-0.2px] text-secondary md:text-[20px]">
-          <p>{cx("overviewP1", "overview.p1")}</p>
-          <p>{cx("overviewP2", "overview.p2")}</p>
-          <p>{cx("overviewP3", "overview.p3")}</p>
-          <p>{cx("overviewP4", "overview.p4")}</p>
+        {/* 본문: 문단별로 묶되, 문장 단위(마침표 기준)로 한 줄씩 개행해 가독성을 높인다. */}
+        <div className="mx-auto mt-6 max-w-2xl space-y-6 text-[14px] font-medium leading-relaxed tracking-[-0.16px] text-secondary md:text-[16px]">
+          {(
+            [
+              ["overviewP1", "overview.p1"],
+              ["overviewP2", "overview.p2"],
+              ["overviewP3", "overview.p3"],
+              ["overviewP4", "overview.p4"],
+            ] as const
+          ).map(([key, fb], i) => (
+            <p key={i} className="space-y-1.5">
+              {cx(key, fb)
+                .split(/(?<=[.。])\s+/)
+                .filter(Boolean)
+                .map((sentence, j) => (
+                  <span key={j} className="block text-balance">
+                    {sentence}
+                  </span>
+                ))}
+            </p>
+          ))}
         </div>
       </section>
 

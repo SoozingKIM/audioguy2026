@@ -1,86 +1,120 @@
 import { getTranslations, setRequestLocale } from "next-intl/server";
 
 import { ContactCta } from "@/components/ContactCta";
-import { DspTabs } from "@/components/DspTabs";
-import { PartnerTabs } from "@/components/PartnerTabs";
 import { RevealCards } from "@/components/RevealCards";
 import { SettlementTabs } from "@/components/SettlementTabs";
 // 임시 숨김: discography "더보기" 버튼 주석 처리로 Link 미사용 (복구 시 주석 해제)
 // import { Link } from "@/i18n/navigation";
 import Image from "next/image";
 import { contentResolver, getPageContent } from "@/lib/pageContent";
-import { getPageImages, imageUrl } from "@/lib/pageImages";
+import { imageUrl } from "@/lib/pageImages";
 import { sanityFetch } from "@/sanity/lib/fetch";
 import { brandRecentDiscographyQuery } from "@/sanity/lib/queries";
 import type { DiscographyEntry } from "@/sanity/types";
 
-// DSP delivery destinations per region (illustrative). Keyed to the tab labels
-// 한국 / 일본 / 글로벌 / 몰입형. Each brand's logo is a Sanity image slot
-// (key: dsp-<slug>), shown as a circle on the card.
-const DSP_GROUPS = [
-  ["Melon", "genie", "FLO", "Bugs", "VIBE", "YouTube Music", "Spotify", "Apple Music"],
-  ["LINE MUSIC", "AWA", "mora", "Recochoku", "Spotify", "Apple Music", "YouTube Music", "Amazon Music"],
-  // "Pandora" 임시 비활성화 — 복구하려면 "TIDAL" 뒤에 "Pandora", 다시 추가
-  ["Spotify", "Apple Music", "YouTube Music", "Amazon Music", "Deezer", "TIDAL", /* "Pandora", */ "SoundCloud"],
-  // 몰입형 탭 (임시 비활성화 — 복구하려면 아래 줄과 DSP_TAB_KEYS의 "dspTab4" 주석 해제)
-  // ["Dolby Atmos", "Apple Spatial Audio", "Sony 360", "TIDAL"],
-];
+// DSP 네트워크 로고 그리드 (Figma "SEORO Web", node 1:45): 다크 그라데이션 위
+// 흰색 로고 5열 × 5행. 각 파일은 /public/seoro/dsp/<key>.(svg|png).
+// tidal·pandora만 png(합성·캡처), 나머지는 svg.
+// 각 로고의 디자인 실측 높이(px, Figma node 1:45). 균일 높이로 늘리면 일부 로고가
+// 비대해 보여서, 로고별 고유 높이로 비율을 유지한다 (정사각 아이콘은 34로 캡).
+const DSP_LOGOS = [
+  { name: "melon", h: 22 }, { name: "genie", h: 31 }, { name: "bugs", h: 27 }, { name: "vibe", h: 27 }, { name: "flo", h: 27 },
+  { name: "spotify", h: 28 }, { name: "amazon-music", h: 32 }, { name: "tidal", h: 16 }, { name: "yt-music", h: 31 }, { name: "apple-music", h: 24 },
+  { name: "deezer", h: 31 }, { name: "meta", h: 21 }, { name: "soundcloud", h: 14 }, { name: "tiktok", h: 28 }, { name: "line-music", h: 18 },
+  { name: "mora", h: 25 }, { name: "awa", h: 20 }, { name: "tencent", h: 15 }, { name: "qobuz", h: 34 }, { name: "kkbox", h: 23 },
+  { name: "pandora", h: 23 }, { name: "hoopla", h: 30 }, { name: "prestomusic", h: 18 }, { name: "audiomack", h: 18 }, { name: "anghami", h: 34 },
+] as const;
+const dspLogoSrc = (name: string) => `/seoro/dsp/${name}.svg`;
 
-const slug = (name: string) =>
-  name.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-const dspLogoKey = (name: string) => "dsp-" + slug(name);
-const partnerLogoKey = (name: string) => "partner-" + slug(name);
-
-// Partners listed by category (프로덕션 / 유통 / 미디어), illustrative. The "전체"
-// tab (partnerTab1) shows every partner; each card is a circle logo + name.
-const PARTNER_GROUPS = [
-  { labelKey: "partnerTab2", brands: ["AUDIOGUY", "Sound360", "Dolby"] },
-  { labelKey: "partnerTab3", brands: ["Dreamus", "Kakao Ent.", "NHN Bugs"] },
-  { labelKey: "partnerTab4", brands: ["YouTube", "Naver", "Apple Music"] },
+// 파트너사 로고 그리드 (Figma "Partners 2"): 5열 × 4행, 흰 배경에 검정 로고 SVG.
+// 각 파일은 /public/seoro/partners/<key>.svg (콘텐츠 영역으로 크롭됨).
+// h: 크롭된 로고의 실측 높이(px). 엠블럼형(정사각)은 워드마크보다 커 보이지 않게 38로 캡.
+const PARTNER_LOGOS = [
+  { key: "dolby-atmos", alt: "Dolby Atmos", h: 26 },
+  { key: "dreamus", alt: "Dreamus", h: 28 },
+  { key: "kakao", alt: "Kakao Entertainment", h: 38 },
+  { key: "naver", alt: "NAVER", h: 18 },
+  { key: "nhn-bugs", alt: "NHN Bugs", h: 24 },
+  { key: "studio-realive", alt: "Studio Realive", h: 21 },
+  { key: "yg-plus", alt: "YG PLUS", h: 29 },
+  { key: "meta", alt: "Meta", h: 23 },
+  { key: "apple-music", alt: "Apple Music", h: 24 },
+  { key: "youtube", alt: "YouTube", h: 21 },
+  { key: "sony-music", alt: "Sony Music", h: 38 },
+  { key: "naxos", alt: "NAXOS", h: 38 },
+  { key: "korg", alt: "KORG", h: 26 },
+  { key: "hibino", alt: "HIBINO", h: 26 },
+  { key: "m-plus", alt: "M Plus", h: 38 },
+  { key: "kyobo", alt: "교보문고", h: 38 },
+  { key: "hankyung", alt: "Hankyung arte Philharmonic", h: 38 },
+  { key: "thc", alt: "THC", h: 38 },
+  { key: "sound360", alt: "SOUND 360", h: 16 },
+  { key: "audioguy", alt: "AUDIOGUY", h: 18 },
 ] as const;
 
-// Figma lays the 6 steps out as a staggered 4-col / 2-row grid: 01·02·03 across
-// the top, then 04·05·06 across the bottom shifted one column right.
+// 유통 프로세스: 8단계 그라데이션 카드 (Figma "SEORO Web"). 좌상단 블루 →
+// 우하단 마젠타로 이어지는 색 흐름을 카드별 그라데이션으로 재현 (4열 × 2행).
 const PROCESS_STEPS = [
-  { no: "01", titleKey: "step1Title", hintKey: "step1Hint", pos: "md:col-start-1 md:row-start-1" },
-  { no: "02", titleKey: "step2Title", pos: "md:col-start-2 md:row-start-1" },
-  { no: "03", titleKey: "step3Title", pos: "md:col-start-3 md:row-start-1" },
-  { no: "04", titleKey: "step4Title", pos: "md:col-start-2 md:row-start-2" },
-  { no: "05", titleKey: "step5Title", pos: "md:col-start-3 md:row-start-2" },
-  { no: "06", titleKey: "step6Title", pos: "md:col-start-4 md:row-start-2" },
+  { no: "01", titleKey: "step1Title", descKey: "step1Desc", grad: "linear-gradient(135deg, #3f6ea3, #3a5d92)" },
+  { no: "02", titleKey: "step2Title", descKey: "step2Desc", grad: "linear-gradient(135deg, #4a649d, #4d5a96)" },
+  { no: "03", titleKey: "step3Title", descKey: "step3Desc", grad: "linear-gradient(135deg, #585c9c, #5d549a)" },
+  { no: "04", titleKey: "step4Title", descKey: "step4Desc", grad: "linear-gradient(135deg, #6b4f9d, #71499a)" },
+  { no: "05", titleKey: "step5Title", descKey: "step5Desc", grad: "linear-gradient(135deg, #7d4a9a, #884797)" },
+  { no: "06", titleKey: "step6Title", descKey: "step6Desc", grad: "linear-gradient(135deg, #944596, #a14290)" },
+  { no: "07", titleKey: "step7Title", descKey: "step7Desc", grad: "linear-gradient(135deg, #aa418c, #ba4282)" },
+  { no: "08", titleKey: "step8Title", descKey: "step8Desc", grad: "linear-gradient(135deg, #c3447c, #d04a72)" },
 ];
 
-// "dspTab4"(몰입형) 임시 비활성화 — 복구하려면 주석 해제 + DSP_GROUPS의 몰입형 그룹도 해제
-const DSP_TAB_KEYS = ["dspTab1", "dspTab2", "dspTab3" /* , "dspTab4" */] as const;
-const SETTLE_TAB_KEYS = [
-  "settleTab1",
-  "settleTab2",
-  "settleTab3",
-  "settleTab4",
+// 정산 리포팅 탭: 발매별 / DSP별 — 각 탭은 자체 이미지를 보여준다.
+// 이미지: /public/seoro/settlement/<file>.
+const SETTLE_TABS = [
+  { key: "settleTab1", src: "/seoro/settlement/release-reporting.svg" },
+  { key: "settleTab2", src: "/seoro/settlement/dsp-reporting.svg" },
 ] as const;
 
 function SectionHeader({
   title,
   caption,
   description,
+  captionClassName,
+  descriptionClassName,
+  wideCaption = false,
 }: {
   title: string;
   caption?: string;
   description?: string;
+  /** 캡션 <p>에 덧붙일 클래스 (예: 긴 캡션을 한 줄로 두기 위한 크기 override). */
+  captionClassName?: string;
+  /** 설명 <p>에 덧붙일 클래스 (예: 크기 축소·폭 제한으로 줄 수 조절). */
+  descriptionClassName?: string;
+  /** 제목 컬럼을 좁히고 캡션 컬럼을 넓혀(캡션이 왼쪽으로 확장) 긴 캡션을 한 줄로 둔다. */
+  wideCaption?: boolean;
 }) {
   return (
-    <div className="grid grid-cols-1 items-start gap-x-5 gap-y-3 md:grid-cols-2">
+    <div
+      className={`grid grid-cols-1 items-start gap-x-5 gap-y-3 ${
+        wideCaption ? "md:grid-cols-[0.5fr_1.5fr]" : "md:grid-cols-2"
+      }`}
+    >
       <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
         {title}
       </h2>
       <div className="md:py-2">
         {caption ? (
-          <p className="text-lg font-semibold leading-[1.4] tracking-[-0.23px] text-foreground md:text-[23px]">
+          <p
+            className={`text-lg font-semibold leading-[1.4] tracking-[-0.23px] text-foreground md:text-[23px] ${
+              captionClassName ?? ""
+            }`}
+          >
             {caption}
           </p>
         ) : null}
         {description ? (
-          <p className="mt-3 text-[15px] font-medium leading-[1.4] tracking-[-0.18px] text-secondary md:text-[18px]">
+          <p
+            className={`mt-3 text-[15px] font-medium leading-[1.4] tracking-[-0.18px] text-secondary md:text-[18px] ${
+              descriptionClassName ?? ""
+            }`}
+          >
             {description}
           </p>
         ) : null}
@@ -101,7 +135,6 @@ export default async function SeoroPage({
   const tCommon = await getTranslations("Common");
   const c = await getPageContent("seoroPage");
   const cx = contentResolver(c, locale, t);
-  const { images } = await getPageImages("seoroPage");
 
   // Discography preview: the 5 most recently added seoro-brand entries.
   // Managed in Sanity Studio (Discography Entry docs, brand="seoro").
@@ -111,35 +144,46 @@ export default async function SeoroPage({
     tags: ["discographyEntry", "brand:seoro"],
   }).catch(() => []);
 
-  const dspTabs = DSP_TAB_KEYS.map((key, i) => ({
-    label: cx(key),
-    brands: DSP_GROUPS[i].map((name) => ({ name, logoKey: dspLogoKey(name) })),
-  }));
-
-  const toPartner = (name: string) => ({ name, logoKey: partnerLogoKey(name) });
-  const partnerTabs = [
-    {
-      label: cx("partnerTab1"),
-      partners: PARTNER_GROUPS.flatMap((g) => g.brands).map(toPartner),
-    },
-    ...PARTNER_GROUPS.map((g) => ({
-      label: cx(g.labelKey),
-      partners: g.brands.map(toPartner),
-    })),
-  ];
-
   return (
     <>
-      {/* Hero */}
-      <section className="seoro-hero relative overflow-hidden px-8 pb-24 pt-16 md:pb-32 md:pt-20 lg:px-14">
-        <div className="mx-auto max-w-[1360px] text-white">
-          <p className="text-2xl font-semibold tracking-tight md:text-[40px]">
+      {/* Hero — 가장 뒤: 앨범 플립 그리드(iframe), 그 위에 Banner Gradient(알파 PNG)를
+          올려서 그라데이션의 투명한 부분으로 그리드가 비치게 한다. */}
+      <section className="relative min-h-[520px] overflow-hidden pb-24 pt-24 md:min-h-[760px] md:pb-32 md:pt-36">
+        {/* 앨범 플립 그리드 (sound360music.github.io/figma-flip-grid) — 최하단 레이어 */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+        >
+          <iframe
+            src="https://sound360music.github.io/figma-flip-grid/"
+            title="SEORO album wall"
+            tabIndex={-1}
+            scrolling="no"
+            loading="lazy"
+            className="absolute -right-16 top-1/2 h-[898px] w-[898px] border-0"
+            style={{
+              transform: "translateY(-50%) rotate(-5deg) scale(1)",
+              transformOrigin: "center right",
+            }}
+          />
+        </div>
+        {/* Banner Gradient — iframe 위에 덮어 그리드보다 앞에 둔다 (알파로 그리드 비침) */}
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 z-[1] bg-center bg-no-repeat"
+          style={{
+            backgroundImage: "url(/seoro/hero-bg.png)",
+            backgroundSize: "100% 100%",
+          }}
+        />
+        <div className="relative z-10 mx-auto max-w-7xl px-8 text-white lg:px-14">
+          <p className="text-xl font-semibold tracking-[0.06em] md:text-[26px]">
             {cx("label")}
           </p>
-          <h1 className="mt-6 text-5xl font-semibold leading-[1] tracking-[-1.63px] md:mt-16 md:text-[120px] lg:text-[163px]">
+          <h1 className="mt-3 text-[44px] font-semibold leading-[1.05] tracking-[-0.02em] md:mt-4 md:text-[72px] lg:text-[96px]">
             {cx("title")}
           </h1>
-          <p className="mt-6 max-w-md text-[15px] leading-[1.5] tracking-[-0.18px] text-white/60 md:text-[18px]">
+          <p className="mt-6 max-w-xl text-[14px] leading-[1.5] tracking-[-0.18px] text-white/70 md:text-[16px]">
             {cx("desc1")}
             <br />
             {cx("desc2")}
@@ -147,12 +191,20 @@ export default async function SeoroPage({
         </div>
       </section>
 
+      {/* 👇 히어로(+네비바) 외 나머지 섹션 임시 비활성화 — false 를 true 로 바꾸면 전체 복구 */}
+      {true && (
+        <>
       {/* 사업 소개 */}
-      <section className="mx-auto max-w-7xl px-8 pt-32 lg:px-14">
+      <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-36 lg:px-14">
         <SectionHeader
           title={cx("business")}
           caption={cx("businessCaption")}
           description={cx("businessDesc")}
+          // 캡션 컬럼을 넓혀 큰 글씨(20px)로도 한 줄에 들어오게
+          wideCaption
+          captionClassName="text-balance md:!text-[19px] lg:!text-[22px]"
+          // 본문은 작게 + 폭 제한으로 2줄
+          descriptionClassName="whitespace-pre-line md:!text-[15px]"
         />
         <div className="mt-10 grid grid-cols-1 gap-5 md:grid-cols-3">
           {[1, 2, 3].map((n) => (
@@ -165,49 +217,45 @@ export default async function SeoroPage({
         </div>
       </section>
 
-      {/* 유통 프로세스 */}
-      <section className="mx-auto max-w-7xl px-8 pt-40 lg:px-14">
+      {/* 파트너사 — 헤더와 로고가 같은 컬럼(그리드 라인)에 정렬되도록 max-w 축소 */}
+      <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-44 lg:px-14">
         <SectionHeader
-          title={cx("process")}
-          caption={cx("processCaption")}
-          description={cx("processDesc")}
+          title={cx("partners")}
+          caption={cx("partnersCaption")}
+          description={cx("partnersDesc")}
+          // 캡션 컬럼을 넓혀 큰 글씨(20px)로도 한 줄에 들어오게
+          wideCaption
+          captionClassName="text-balance md:!text-[19px] lg:!text-[22px]"
+          // 본문은 작게 + 폭 제한으로 2줄
+          descriptionClassName="whitespace-pre-line md:!text-[15px]"
         />
-        <RevealCards className="mt-10 grid grid-cols-1 gap-5 sm:grid-cols-2 md:grid-cols-4 md:grid-rows-2">
-          {PROCESS_STEPS.map((step, i) => (
+        {/* 로고 그리드: 5열 × 4행(20칸). 흰 배경 위 검정 로고 SVG, 각 칸 가운데 정렬. */}
+        <div className="mt-16 grid grid-cols-3 gap-x-6 gap-y-10 md:grid-cols-5">
+          {PARTNER_LOGOS.map((logo) => (
             <div
-              key={step.no}
-              data-card
-              className={`relative h-[200px] overflow-hidden bg-cover bg-center md:h-[260px] ${step.pos}`}
-              style={{ backgroundImage: `url(/seoro/process-${i + 1}.png)` }}
+              key={logo.key}
+              className="flex h-12 items-center justify-center"
             >
-              {/* Figma graphic is the background (incl. the baked step number);
-                  the title is live text, with a matching light gradient hiding
-                  the baked title underneath. */}
-              <div
-                aria-hidden
-                className={`absolute inset-x-0 bottom-0 ${step.hintKey ? "h-3/5" : "h-2/5"}`}
-                style={{
-                  background:
-                    "linear-gradient(to top, #eef2f7 0%, #eef2f7 60%, rgba(238,242,247,0) 100%)",
-                }}
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src={`/seoro/partners/${logo.key}.svg`}
+                alt={logo.alt}
+                style={{ maxHeight: `${logo.h}px` }}
+                className="w-auto max-w-full object-contain"
               />
-              <div className="absolute inset-x-0 bottom-0 p-6">
-                <h3 className="text-xl font-semibold leading-[1.4] tracking-[-0.24px] text-foreground md:text-[24px]">
-                  {cx(step.titleKey)}
-                </h3>
-                {step.hintKey ? (
-                  <p className="mt-2 text-[13px] leading-[1.4] tracking-[-0.15px] text-secondary">
-                    {cx(step.hintKey)}
-                  </p>
-                ) : null}
-              </div>
             </div>
           ))}
-        </RevealCards>
+        </div>
       </section>
 
-      {/* DSP 네트워크 (Dark) */}
-      <section className="mt-40 bg-foreground py-20 text-white md:py-24">
+      {/* DSP 네트워크 (Figma node 1:39): 다크 그라데이션 위 흰 로고 5열 그리드 */}
+      <section
+        className="mt-24 md:mt-44 py-20 text-white md:py-28"
+        style={{
+          background:
+            "linear-gradient(118deg, #3a4350 0%, #565f6d 52%, #847f85 100%)",
+        }}
+      >
         <div className="mx-auto max-w-7xl px-8 lg:px-14">
           <div className="grid grid-cols-1 items-start gap-x-5 gap-y-3 md:grid-cols-2">
             <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
@@ -217,53 +265,91 @@ export default async function SeoroPage({
               <p className="text-lg font-semibold leading-[1.4] tracking-[-0.23px] md:text-[23px]">
                 {cx("dspSubtitle")}
               </p>
-              <p className="mt-3 max-w-md text-[15px] font-medium leading-[1.4] tracking-[-0.18px] text-white/66 md:text-[18px]">
+              <p className="mt-3 max-w-md text-[15px] font-medium leading-[1.4] tracking-[-0.18px] text-white/70 md:text-[18px]">
                 {cx("dspDesc")}
               </p>
             </div>
           </div>
 
-          <DspTabs tabs={dspTabs} slots={images} />
+          {/* 로고 그리드: 5열 × 5행. 다크 그라데이션 위 흰 로고 SVG, 각 칸 가운데 정렬. */}
+          <div className="mt-14 grid grid-cols-3 gap-x-6 gap-y-10 md:grid-cols-5">
+            {DSP_LOGOS.map(({ name, h }) => (
+              <div
+                key={name}
+                className="flex h-12 items-center justify-center"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={dspLogoSrc(name)}
+                  alt={name}
+                  style={{ maxHeight: `${h}px` }}
+                  className="w-auto max-w-full object-contain"
+                />
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
-      {/* 파트너사 */}
-      <section className="mx-auto max-w-7xl px-8 pt-40 lg:px-14">
+      {/* 유통 프로세스 */}
+      <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-44 lg:px-14">
         <SectionHeader
-          title={cx("partners")}
-          caption={cx("partnersCaption")}
-          description={cx("partnersDesc")}
+          title={cx("process")}
+          caption={cx("processCaption")}
+          description={cx("processDesc")}
         />
-        <PartnerTabs tabs={partnerTabs} slots={images} />
+        <RevealCards className="mt-10 grid grid-cols-2 gap-5 md:grid-cols-4">
+          {PROCESS_STEPS.map((step) => (
+            <div
+              key={step.no}
+              data-card
+              className="relative flex h-[190px] flex-col justify-between overflow-hidden p-5 text-white md:h-[210px]"
+              style={{ backgroundImage: step.grad }}
+            >
+              <span className="text-[15px] font-semibold tracking-[-0.18px] text-white/80">
+                {step.no}
+              </span>
+              <div>
+                <h3 className="text-[15px] font-semibold leading-[1.3] tracking-[-0.2px] md:text-[17px]">
+                  {cx(step.titleKey)}
+                </h3>
+                <p className="mt-1.5 text-[11px] leading-[1.45] tracking-[-0.1px] text-white/75 md:text-[12px]">
+                  {cx(step.descKey)}
+                </p>
+              </div>
+            </div>
+          ))}
+        </RevealCards>
       </section>
 
       {/* 정산 시스템 소개 */}
-      <section className="mx-auto max-w-7xl px-8 pt-40 lg:px-14">
-        <SectionHeader
-          title={cx("settlement")}
-          caption={cx("settlementCaption")}
-        />
-        <div className="mt-3 grid grid-cols-1 gap-x-5 md:grid-cols-2">
-          <div className="hidden md:block" />
-          <div className="md:py-2">
-            <p className="text-lg font-semibold leading-[1.4] tracking-[-0.23px] text-foreground md:text-[23px]">
-              {cx("settlementSystem")}
-            </p>
-            <p className="mt-3 max-w-md text-[15px] font-medium leading-[1.4] tracking-[-0.18px] text-secondary md:text-[18px]">
-              {cx("settlementDesc")}
-            </p>
-          </div>
+      <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-44 lg:px-14">
+        {/* 라벨 → 헤드라인(SOVO360 정산 시스템) → 카피 → 본문 */}
+        <div>
+          <p className="text-xs font-medium uppercase leading-normal tracking-[-0.12px] text-secondary">
+            {cx("settlement")}
+          </p>
+          <h2 className="mt-3 text-[28px] font-bold uppercase leading-[1.2] tracking-[-1.2px] text-foreground md:text-[40px]">
+            {cx("settlementSystem")}
+          </h2>
+          <p className="mt-3 text-lg font-semibold leading-[1.4] tracking-[-0.23px] text-foreground md:text-[22px]">
+            {cx("settlementCaption")}
+          </p>
+          <p className="mt-4 text-[15px] font-medium leading-[1.7] tracking-[-0.18px] text-secondary md:text-[17px] lg:whitespace-nowrap">
+            {cx("settlementDesc")}
+          </p>
         </div>
 
         <SettlementTabs
-          panels={SETTLE_TAB_KEYS.map((key) => ({ label: cx(key) }))}
+          panels={SETTLE_TABS.map((tab) => ({ label: cx(tab.key), src: tab.src }))}
           imageNeeded={tCommon("imageNeeded")}
         />
       </section>
 
-      {/* DISCOGRAPHY — brand "seoro" entries from Sanity (managed in Studio
-          → Discography Entry, filtered to brand=seoro, 5 most recent). */}
-      <section className="mx-auto max-w-7xl px-8 pt-40 lg:px-14">
+      {/* DISCOGRAPHY — 임시 숨김 (복구하려면 false → true).
+          brand "seoro" entries from Sanity (Studio → Discography Entry, brand=seoro, 5 most recent). */}
+      {false && (
+      <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-44 lg:px-14">
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx("discography")}
         </h2>
@@ -309,8 +395,11 @@ export default async function SeoroPage({
           })}
         </div>
       </section>
+      )}
 
       <ContactCta />
+        </>
+      )}
     </>
   );
 }

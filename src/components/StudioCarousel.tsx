@@ -55,7 +55,7 @@ export function StudioCarousel({
 
   return (
     <div className="mt-10">
-      <div className="relative aspect-[68/29] w-full overflow-hidden bg-background-white">
+      <div className="relative aspect-[3/2] w-full overflow-hidden bg-background-white">
         {slides.map((slide, i) => {
           const hasImage =
             !!imageUrl(findSlot(slots, slide.slotKey)?.image) ||
