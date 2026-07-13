@@ -136,7 +136,7 @@
       "member1Name": "최정훈",
       "member1Role": "CEO",
       "member2Name": "이동주",
-      "member2Role": "대표이사 / 전략•개발팀",
+      "member2Role": "CSO",
       "member3Name": "김소이",
       "member3Role": "뮤직 IP",
       "member4Name": "오대규",
@@ -158,7 +158,7 @@
       "studio1DescEn": "경복궁 인근에 위치한 잔향 2.7초의 어쿠스틱 성지",
       "studio2Name": "Seocho Studio",
       "studio2DescKr": "서초 스튜디오",
-      "studio2DescEn": "국내 유일/최초의 대규모 Dolby Atmos 전용 스튜디오"
+      "studio2DescEn": "국내 최초의 Dolby Atmos music studio"
     }
   },
   "Audioguy": {
@@ -253,7 +253,7 @@
     "desc2": "음악이 확장될 수 있는 새로운 경로를 아시아 전역에 설계하는 유통사입니다.",
     "business": "사업 소개",
     "businessCaption": "공간음향 제작, 아시아 유통, 미디어 확장을 하나의 흐름으로 연결합니다.",
-    "businessDesc": "SEORO는 Dolby Atmos 제작, 아시아 지역 전략 유통, 미디어 확장을\n하나의 통합된 프레임워크로 결합합니다.",
+    "businessDesc": "SEORO는 Dolby Atmos 제작, 아시아 지역 전략 유통, 미디어 확장을 하나의 통합된 프레임워크로 결합합니다.",
     "biz1Title": "콜린형 사운드 제작",
     "biz1Desc": "공간음향 음원을 통해 정자 정밀을 확장합니다",
     "biz2Title": "전략적 아시아 유통",

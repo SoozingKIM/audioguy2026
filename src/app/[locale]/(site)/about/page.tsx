@@ -463,7 +463,8 @@ export default async function AboutPage({
           동심원 리플 글로우(Figma Frame 146의 Group 24 + Group 10)를 한 장으로 합성한
           에셋. 리플(폭 1620)이 콘텐츠(1360)보다 넓어 바깥으로 살짝 블리드하므로
           섹션을 풀폭 + overflow-hidden으로 두고, 헤더만 콘텐츠 폭으로 정렬한다. */}
-      <section className="relative overflow-hidden pt-28 md:pt-44">
+      {/* 섹션 단위 reveal: Presence와 트리거 지점(각 섹션 top)이 벌어져 각각 따로 올라온다 */}
+      <section data-reveal className="relative overflow-hidden pt-28 md:pt-44">
         <div className="mx-auto max-w-[1440px] px-6 lg:px-10">
           <SectionHeader
             label={cx("proof.label")}
@@ -476,7 +477,6 @@ export default async function AboutPage({
           {PROOF_LOGOS.map((logo) => (
             <div
               key={logo.src}
-              data-reveal
               className="relative aspect-square border border-[#d2d3d5]/40 bg-[#f3f5f8]/70 backdrop-blur-[25px]"
             >
               <Image
