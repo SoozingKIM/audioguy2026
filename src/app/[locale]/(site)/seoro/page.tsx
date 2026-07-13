@@ -2,6 +2,7 @@ import { getTranslations, setRequestLocale } from 'next-intl/server';
 
 import { ContactCta } from '@/components/ContactCta';
 import { RevealCards } from '@/components/RevealCards';
+import { SectionReveal } from '@/components/SectionReveal';
 import { SettlementTabs } from '@/components/SettlementTabs';
 // 임시 숨김: discography "더보기" 버튼 주석 처리로 Link 미사용 (복구 시 주석 해제)
 // import { Link } from "@/i18n/navigation";
@@ -257,19 +258,21 @@ export default async function SeoroPage({
       {/* 👇 히어로(+네비바) 외 나머지 섹션 임시 비활성화 — false 를 true 로 바꾸면 전체 복구 */}
       {true && (
         <>
-          {/* 사업 소개 */}
+          {/* 사업 소개 — 섹션이 커서 헤더·카드를 각각 reveal(콘텐츠가 보일 때 올라옴) */}
           <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-36 lg:px-14">
-            <SectionHeader
-              title={cx('business')}
-              caption={cx('businessCaption')}
-              description={cx('businessDesc')}
-              // 제목-본문 여백은 유통프로세스 규격(1:1). 1fr 컬럼에 한 줄로 들어가도록
-              // 21px로 살짝 낮추고 break-keep로 한글 단어 중간 잘림 방지
-              captionClassName="text-balance break-keep md:!text-[18px] lg:!text-[21px]"
-              // 설명 크기는 DSP 네트워크 본문과 동일하게 18px
-              descriptionClassName="md:!text-[18px]"
-            />
-            <div className="mt-24 grid grid-cols-1 gap-5 md:grid-cols-3">
+            <div data-reveal>
+              <SectionHeader
+                title={cx('business')}
+                caption={cx('businessCaption')}
+                description={cx('businessDesc')}
+                // 제목-본문 여백은 유통프로세스 규격(1:1). 1fr 컬럼에 한 줄로 들어가도록
+                // 21px로 살짝 낮추고 break-keep로 한글 단어 중간 잘림 방지
+                captionClassName="text-balance break-keep md:!text-[18px] lg:!text-[21px]"
+                // 설명 크기는 DSP 네트워크 본문과 동일하게 18px
+                descriptionClassName="md:!text-[18px]"
+              />
+            </div>
+            <div data-reveal className="mt-24 grid grid-cols-1 gap-5 md:grid-cols-3">
               {[1, 2, 3].map((n) => (
                 <div
                   key={n}
@@ -281,7 +284,7 @@ export default async function SeoroPage({
           </section>
 
           {/* 파트너사 — 헤더와 로고가 같은 컬럼(그리드 라인)에 정렬되도록 max-w 축소 */}
-          <section className="mx-auto max-w-7xl px-8 mt-16 md:pt-52 md:pb-40   lg:px-14 _bg-amber-600">
+          <section data-reveal className="mx-auto max-w-7xl px-8 mt-16 md:pt-52 md:pb-40   lg:px-14 _bg-amber-600">
             <SectionHeader
               title={cx('partners')}
               caption={cx('partnersCaption')}
@@ -313,6 +316,7 @@ export default async function SeoroPage({
 
           {/* DSP 네트워크 (Figma node 1:39): 다크 그라데이션 위 흰 로고 5열 그리드 */}
           <section
+            data-reveal
             className="mt-16 md:pt-52 md:pb-40 py-20 text-white md:py-28"
             style={{
               background:
@@ -385,10 +389,10 @@ export default async function SeoroPage({
             </RevealCards>
           </section>
 
-          {/* 정산 시스템 소개 */}
+          {/* 정산 시스템 소개 — 섹션이 커서 헤더·탭을 각각 reveal(콘텐츠가 보일 때 올라옴) */}
           <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-44 lg:px-14">
             {/* 헤드라인(SOVO360 정산 시스템) → 카피 → 본문 */}
-            <div>
+            <div data-reveal>
               <h2 className="text-[28px] font-bold uppercase leading-[1.2] tracking-[-1.2px] text-foreground md:text-[40px]">
                 {cx('settlementSystem')}
               </h2>
@@ -400,13 +404,15 @@ export default async function SeoroPage({
               </p>
             </div>
 
-            <SettlementTabs
-              panels={SETTLE_TABS.map((tab) => ({
-                label: cx(tab.key),
-                src: tab.src,
-              }))}
-              imageNeeded={tCommon('imageNeeded')}
-            />
+            <div data-reveal>
+              <SettlementTabs
+                panels={SETTLE_TABS.map((tab) => ({
+                  label: cx(tab.key),
+                  src: tab.src,
+                }))}
+                imageNeeded={tCommon('imageNeeded')}
+              />
+            </div>
           </section>
 
           {/* DISCOGRAPHY — 임시 숨김 (복구하려면 false → true).
@@ -461,6 +467,7 @@ export default async function SeoroPage({
           )}
 
           <ContactCta />
+          <SectionReveal />
         </>
       )}
     </>

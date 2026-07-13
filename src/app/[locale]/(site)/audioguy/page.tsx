@@ -163,7 +163,7 @@ export default async function AudioguyPage({
         }}
       >
         <div className="mx-auto max-w-7xl px-8 lg:px-14">
-        <h2 className="text-[34px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[52px]">
+        <h2 data-reveal className="text-[34px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[52px]">
           {cx("discography")}
         </h2>
         <div className="mt-10 flex items-center justify-between">
@@ -179,7 +179,7 @@ export default async function AudioguyPage({
           </Link>
           */}
         </div>
-        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
+        <div data-reveal className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-5 lg:gap-4">
           {discography.map((entry) => {
             const cover = imageUrl(entry.cover, 600, 600);
             return (
@@ -341,7 +341,7 @@ export default async function AudioguyPage({
       {/* STUDIO — 위 '작업 내용' 그룹과 분리되도록 풀폭 화이트 밴드 */}
       <section className="mt-28 bg-background-white py-28 md:mt-48 md:py-40">
         <div className="mx-auto max-w-7xl px-8 lg:px-14">
-          <div className="grid grid-cols-1 items-start gap-x-5 gap-y-6 md:grid-cols-2">
+          <div data-reveal className="grid grid-cols-1 items-start gap-x-5 gap-y-6 md:grid-cols-2">
           <h2 className="text-[34px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[52px]">
             {cx("studio")}
           </h2>
@@ -355,7 +355,7 @@ export default async function AudioguyPage({
             </p>
           </div>
         </div>
-          <div className="relative mt-10 aspect-video w-full overflow-hidden">
+          <div data-reveal className="relative mt-10 aspect-video w-full overflow-hidden">
             <SlotImage
               slots={images}
               slotKey="piano"
@@ -371,16 +371,18 @@ export default async function AudioguyPage({
 
       {/* OUR TEAM (Figma Frame 206) */}
       <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-44 lg:px-14">
-        <h2 className="text-[34px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[52px]">
+        <h2 data-reveal className="text-[34px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[52px]">
           {cx("ourTeam")}
         </h2>
-        <TeamGrid
-          members={team}
-          slots={images}
-          bioFallback={tCommon("comingSoon")}
-          columns={4}
-          portrait
-        />
+        <div data-reveal>
+          <TeamGrid
+            members={team}
+            slots={images}
+            bioFallback={tCommon("comingSoon")}
+            columns={4}
+            portrait
+          />
+        </div>
       </section>
 
       <ContactCta />

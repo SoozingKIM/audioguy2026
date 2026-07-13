@@ -442,14 +442,16 @@ export default async function AboutPage({
         </div>
       </section>
 
-      {/* The People */}
+      {/* The People — 헤더·캐러셀 각각 reveal(콘텐츠가 보일 때 올라옴) */}
       <section className="mx-auto max-w-[1440px] px-6 pt-28 md:pt-44 lg:px-10">
-        <SectionHeader
-          label={cx("people.label")}
-          title={cx("people.title")}
-          description={cx("people.description")}
-        />
-        <div className="mt-10">
+        <div data-reveal>
+          <SectionHeader
+            label={cx("people.label")}
+            title={cx("people.title")}
+            description={cx("people.description")}
+          />
+        </div>
+        <div data-reveal className="mt-10">
           <PeopleCarousel
             members={people}
             slots={images}

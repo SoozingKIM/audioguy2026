@@ -168,70 +168,11 @@ export default async function Sound360Page({
         </div>
       </section>
 
-      {/* ② 작업 내용 및 범위 — service icon cards */}
+      {/* ② DISCOGRAPHY (+ XR 카테고리) — 히어로 바로 아래 */}
       <section
         data-reveal
-        className="mx-auto max-w-7xl px-8 pt-24 md:pt-44 lg:px-14"
+        className="mx-auto max-w-7xl px-8 pt-28 md:pt-52 lg:px-14"
       >
-        <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
-          {cx('workScope')}
-        </h2>
-        <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
-          {SERVICES.map((s) => (
-            <div key={s.key} className="flex flex-col gap-3">
-              <div className="relative flex aspect-[82/65] items-center justify-center overflow-hidden bg-black">
-                {/* 검은 박스에 아이콘/그래픽을 가운데 축소 배치 (4칸 통일) */}
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={`/sound360/${s.img}`}
-                  alt=""
-                  style={{ maxHeight: `${s.maxH}%` }}
-                  className="max-w-[85%] object-contain"
-                />
-              </div>
-              <div className="flex flex-col gap-0.5 text-center">
-                <p className="text-[16px] font-semibold tracking-[-0.18px] text-foreground md:text-[18px]">
-                  {cx(s.key)}
-                </p>
-                <p className="text-[13px] font-medium leading-[1.4] tracking-[-0.13px] text-foreground/45">
-                  {cx(`${s.key}Desc`)}
-                </p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* ③ STUDIO (dark) */}
-      <section className="mt-24 md:mt-44 bg-[#121318] py-20 text-white md:py-24">
-        <div className="mx-auto max-w-7xl px-8 lg:px-14">
-          <div className="grid grid-cols-1 items-start gap-x-5 gap-y-6 md:grid-cols-2">
-            <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
-              {cx('studio')}
-            </h2>
-            <div>
-              <p className="text-lg font-semibold leading-[1.4] tracking-[-0.23px] md:text-[23px]">
-                {cx('studioTitle')}
-              </p>
-              <p className="mt-3 max-w-md text-[15px] font-medium leading-[1.4] tracking-[-0.18px] text-white/80 md:text-[18px]">
-                {cx('studioBody')}
-              </p>
-            </div>
-          </div>
-
-          <StudioCarousel
-            slides={studioSlides}
-            slots={images}
-            alt={cx('studioTitle')}
-            imageNeeded={tCommon('imageNeeded')}
-            prevLabel={tCommon('previous')}
-            nextLabel={tCommon('next')}
-          />
-        </div>
-      </section>
-
-      {/* ④ DISCOGRAPHY (+ XR 카테고리) */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-44 lg:px-14">
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx('discography')}
         </h2>
@@ -299,8 +240,76 @@ export default async function Sound360Page({
         </div>
       </section>
 
+      {/* ③ 작업 내용 및 범위 — service icon cards */}
+      <section
+        data-reveal
+        className="mx-auto max-w-7xl px-8 pt-28 md:pt-52 lg:px-14"
+      >
+        <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
+          {cx('workScope')}
+        </h2>
+        <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
+          {SERVICES.map((s) => (
+            <div key={s.key} className="flex flex-col gap-3">
+              <div className="relative flex aspect-[82/65] items-center justify-center overflow-hidden bg-black">
+                {/* 검은 박스에 아이콘/그래픽을 가운데 축소 배치 (4칸 통일) */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={`/sound360/${s.img}`}
+                  alt=""
+                  style={{ maxHeight: `${s.maxH}%` }}
+                  className="max-w-[85%] object-contain"
+                />
+              </div>
+              <div className="flex flex-col gap-0.5 text-center">
+                <p className="text-[16px] font-semibold tracking-[-0.18px] text-foreground md:text-[18px]">
+                  {cx(s.key)}
+                </p>
+                <p className="text-[13px] font-medium leading-[1.4] tracking-[-0.13px] text-foreground/45">
+                  {cx(`${s.key}Desc`)}
+                </p>
+              </div>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ④ STUDIO (dark) */}
+      <section
+        data-reveal
+        className="mt-28 md:mt-52 bg-[#121318] py-20 text-white md:py-24"
+      >
+        <div className="mx-auto max-w-7xl px-8 lg:px-14">
+          <div className="grid grid-cols-1 items-start gap-x-5 gap-y-6 md:grid-cols-2">
+            <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
+              {cx('studio')}
+            </h2>
+            <div>
+              <p className="text-lg font-semibold leading-[1.4] tracking-[-0.23px] md:text-[23px]">
+                {cx('studioTitle')}
+              </p>
+              <p className="mt-3 max-w-md text-[15px] font-medium leading-[1.4] tracking-[-0.18px] text-white/80 md:text-[18px]">
+                {cx('studioBody')}
+              </p>
+            </div>
+          </div>
+
+          <StudioCarousel
+            slides={studioSlides}
+            slots={images}
+            alt={cx('studioTitle')}
+            imageNeeded={tCommon('imageNeeded')}
+            prevLabel={tCommon('previous')}
+            nextLabel={tCommon('next')}
+          />
+        </div>
+      </section>
+
       {/* ⑤ OUR TEAM */}
-      <section className="mx-auto max-w-7xl px-8 pt-24 md:pt-44 lg:px-14">
+      <section
+        data-reveal
+        className="mx-auto max-w-7xl px-8 pt-28 md:pt-52 lg:px-14"
+      >
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx('ourTeam')}
         </h2>
@@ -315,7 +324,10 @@ export default async function Sound360Page({
       </section>
 
       {/* ⑥ 소개 영상 + 위치 — 2분할: 왼쪽 브랜드 영상, 오른쪽 네이버 지도 */}
-      <section className="mt-24 md:mt-44 w-full overflow-hidden">
+      <section
+        data-reveal
+        className="mt-28 md:mt-52 w-full overflow-hidden"
+      >
         <div className="mx-auto max-w-7xl px-8 lg:px-14">
           {/* 영상은 좌측 끝선, 지도는 우측 끝선에 붙이고 가운데를 띄운다 */}
           <div className="flex flex-col gap-8 lg:flex-row lg:items-stretch lg:justify-between">

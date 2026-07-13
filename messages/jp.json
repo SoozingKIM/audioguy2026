@@ -10,7 +10,7 @@
   },
   "FooterNav": {
     "home": "Home",
-    "about": "about",
+    "about": "About",
     "audioguy": "AG Studio",
     "sound360": "Sound360",
     "seoro": "Seoro",
@@ -140,9 +140,9 @@
       "member3Name": "キム・ソイ",
       "member3Role": "ミュージックIP",
       "member4Name": "オ・デギュ",
-      "member4Role": "空間音響_KPOP",
+      "member4Role": "SOUND360 室長",
       "member5Name": "アン・ボムヒョン",
-      "member5Role": "エンジニア / ミキシング"
+      "member5Role": "AGSTUDIO 室長"
     },
     "proof": {
       "label": "PARTNERSHIP",
@@ -281,7 +281,7 @@
     "step7Desc": "リリース日に音源が公開され、さまざまなプラットフォームで再生できます。",
     "step8Desc": "ストリーミングデータに基づき収益を精算し、レポートを提供します。",
     "dspNetwork": "DSPネットワーク",
-    "dspSubtitle": "アジア中心のプラットフォーム接続",
+    "dspSubtitle": "アジア中心のプラットフォームへのアクセス",
     "dspDesc": "韓国、日本、グローバル市場をつなぐ流通ネットワークを提供します。SEOROはリリース目的、権利状況、ターゲット市場に合わせて、主要DSPおよびグローバルプラットフォームへの流通経路を設計します。",
     "dspTab1": "韓国",
     "dspTab2": "日本",

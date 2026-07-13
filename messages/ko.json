@@ -140,9 +140,9 @@
       "member3Name": "김소이",
       "member3Role": "뮤직 IP",
       "member4Name": "오대규",
-      "member4Role": "공간음향_KPOP",
+      "member4Role": "SOUND360 실장",
       "member5Name": "안범현",
-      "member5Role": "엔지니어 / 믹싱"
+      "member5Role": "AGSTUDIO 실장"
     },
     "proof": {
       "label": "PARTNERSHIP",
@@ -208,7 +208,7 @@
   "Sound360": {
     "label": "Dolby Atmos",
     "title": "MAKE SOUND 360°",
-    "description": "SOUND360은 국내 최초로 Dolby Atmos 시스템을 도입한 뮤직 스튜디오입니다.\n25년 넘게 음악 현장에서 소리를 기록해온 오디오가이의 경험 위에, 음악과 XR을 아우르는 공간음향 제작 역량을 더했습니다.\n우리는 소리에 공간을 부여하고, 음악이 들리는 방식을 다시 설계합니다.",
+    "description": "SOUND360은 국내 최초로 Dolby Atmos 시스템을 도입한 뮤직 스튜디오입니다.\n25년 넘게 음악 현장에서 소리를 기록해온 오디오가이의 경험 위에,\n음악과 XR을 아우르는 공간음향 제작 역량을 더했습니다.\n우리는 소리에 공간을 부여하고, 음악이 들리는 방식을 다시 설계합니다.",
     "point1Title": "국내 최초 돌비 애트모스 \"뮤직\" 스튜디오",
     "point1Sub": "사운드의 방향을 완전히 자유롭게",
     "point2Title": "국내 최다 돌비 애트모스 작업 경험 & 노하우",
@@ -217,11 +217,11 @@
     "point3Sub": "음악·XR 공간음향을 아우르는 멀티 포맷 스튜디오",
     "workScope": "작업 내용 및 범위",
     "service1": "Mixing & Mastering",
-    "service1Desc": "스테레오 음원의 밸런스와 질감을 다듬어 완성도 높은 사운드로 마무리합니다.",
+    "service1Desc": "스테레오 음원의 밸런스와 질감을 다듬어\n완성도 높은 사운드로 마무리합니다.",
     "service2": "공간음향 (Spatial Audio)",
-    "service2Desc": "Dolby Atmos를 비롯한 멀티 포맷 공간음향 믹싱으로 음악의 청취 경험을 확장합니다.",
+    "service2Desc": "Dolby Atmos를 비롯한 멀티 포맷 공간음향 믹싱으로\n음악의 청취 경험을 확장합니다.",
     "service3": "Post Production",
-    "service3Desc": "영상과 콘텐츠에 어울리는 사운드 후반 작업을 완성합니다.",
+    "service3Desc": "영상과 콘텐츠에 어울리는\n사운드 후반 작업을 완성합니다.",
     "service4": "Live Streaming",
     "service4Desc": "KORG Live Extreme 기반의 고음질 라이브 스트리밍과 실황 레코딩을 지원합니다.",
     "studio": "STUDIO",
