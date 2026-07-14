@@ -220,3 +220,15 @@ body {
     animation: none;
   }
 }
+
+/* Contact 서비스 설명 카드 — 탭 전환 시 부드럽게 페이드/슬라이드 인 */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

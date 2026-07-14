@@ -170,11 +170,12 @@ export default async function AboutPage({
     <>
       {/* Hero — The Soul (Figma Frame 20): rounded glow card, white centered text */}
       <section className="pt-2">
-        <div className="relative flex min-h-[420px] items-center justify-center overflow-hidden rounded-[20px] bg-background sm:min-h-[500px] md:min-h-[600px] lg:min-h-[660px]">
-          {/* Layered glow + ripple rings, centered on a fixed-aspect stage */}
+        <div className="relative flex min-h-[260px] items-center justify-center overflow-hidden rounded-[20px] bg-background sm:min-h-[500px] md:min-h-[600px] lg:min-h-[660px]">
+          {/* Layered glow + ripple rings, centered on a fixed-aspect stage.
+              모바일은 카드를 가로로 납작하게 두고 글로우를 키운다(w-[150%]) */}
           <div
             aria-hidden
-            className="pointer-events-none absolute left-1/2 top-1/2 aspect-32/11 w-full -translate-x-1/2 -translate-y-1/2"
+            className="pointer-events-none absolute left-1/2 top-1/2 aspect-32/11 w-[150%] -translate-x-1/2 -translate-y-1/2 md:w-full"
           >
             {HERO_GLOW.map((g, i) => (
               <div
@@ -194,18 +195,19 @@ export default async function AboutPage({
             ))}
           </div>
 
-          {/* Text (모바일) — 좁은 스테이지에 겹치지 않도록 일반 세로 중앙 정렬 */}
-          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-3 px-6 text-center text-white md:hidden">
-            <p className="text-[11px] font-medium uppercase leading-[1.5] tracking-[-0.12px] text-white/60">
+          {/* Text (모바일) — 좁은 스테이지에 겹치지 않도록 일반 세로 중앙 정렬.
+              모바일은 글로우가 짧아 텍스트가 밝은 배경 위로 나오므로 어두운 색으로 가독성 확보 */}
+          <div className="pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-1 px-6 text-center text-foreground md:hidden">
+            <p className="text-[11px] font-medium uppercase leading-[1.5] tracking-[-0.12px] text-foreground/60">
               {cx("hero.eyebrow")}
             </p>
-            <p className="text-[26px] font-bold leading-[1.3] tracking-[-1px]">
+            <p className="text-[28px] font-bold leading-[1.15] tracking-[-1px] text-white">
               {cx("hero.soul")}
             </p>
-            <h1 className="mt-2 text-[23px] font-bold leading-[1.35] tracking-[-0.4px]">
+            <h1 className="text-[25px] font-bold leading-[1.15] tracking-[-0.4px] text-white">
               {cx("hero.title")}
             </h1>
-            <p className="text-[15px] font-bold leading-[1.4] tracking-[-0.2px] text-white/60">
+            <p className="text-[15px] font-bold leading-[1.4] tracking-[-0.2px] text-foreground/55">
               {cx("hero.subtitle")}
             </p>
           </div>

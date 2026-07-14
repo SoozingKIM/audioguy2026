@@ -36,6 +36,11 @@ export default async function ContactPage({
     submitting: cx("submitting"),
     success: cx("success"),
     error: cx("error"),
+    serviceDesc: {
+      audioguy: cx("serviceDescAudioguy"),
+      sound360: cx("serviceDescSound360"),
+      seoro: cx("serviceDescSeoro"),
+    },
   };
 
   const settings = await sanityFetch<SiteSettings | null>({
@@ -52,7 +57,7 @@ export default async function ContactPage({
         {/* Figma 좌측 카드: 글로우는 래스터 에셋, 이메일·전화는 실제 텍스트로 렌더
             (이전엔 텍스트가 PNG에 합성돼 흐릿하게 보였음). */}
         <div
-          className="relative min-h-[480px] overflow-hidden rounded-[20px] bg-cover bg-center md:min-h-[580px]"
+          className="relative min-h-[220px] overflow-hidden rounded-[20px] bg-cover bg-center md:min-h-[580px]"
           style={{ backgroundImage: "url(/contact/card-left.png)" }}
         >
           <div className="absolute inset-0 flex items-center justify-center px-6">

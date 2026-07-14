@@ -316,7 +316,10 @@
   },
   "Contact": {
     "title": "CONTACT",
-    "brand": "Inquiry brand",
+    "brand": "Service",
+    "serviceDescAudioguy": "Studio & live recording",
+    "serviceDescSound360": "Spatial audio mixing & mastering",
+    "serviceDescSeoro": "Music distribution",
     "company": "Company",
     "name": "Name",
     "position": "Department / Position",

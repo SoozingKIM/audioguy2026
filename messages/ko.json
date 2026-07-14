@@ -316,7 +316,10 @@
   },
   "Contact": {
     "title": "CONTACT",
-    "brand": "문의할 브랜드",
+    "brand": "서비스",
+    "serviceDescAudioguy": "스튜디오 및 실황 녹음",
+    "serviceDescSound360": "공간음향 Mixing & Mastering",
+    "serviceDescSeoro": "음원 유통",
     "company": "회사/기업명",
     "name": "의뢰인명",
     "position": "부서/직책",

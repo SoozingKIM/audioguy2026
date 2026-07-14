@@ -6,6 +6,7 @@ import { SectionReveal } from "@/components/SectionReveal";
 import { SlotImage } from "@/components/SlotImage";
 import { HoverVideoEmbed } from "@/components/HoverVideoEmbed";
 import { type ServiceItem } from "@/components/ServiceAccordion";
+import { TeamCarousel } from "@/components/TeamCarousel";
 import { TeamGrid, type TeamMember } from "@/components/TeamGrid";
 // 임시 숨김: discography "더보기" 버튼 주석 처리로 Link 미사용 (복구 시 주석 해제)
 // import { Link } from "@/i18n/navigation";
@@ -248,8 +249,8 @@ export default async function AudioguyPage({
                 className="object-cover"
               />
             </div>
-            {/* 로고: 오른쪽 절반, 4열 × 2행. 흰 슬롯에 가운데 정렬 */}
-            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3">
+            {/* 로고: 오른쪽 절반. 모바일 3열×3행(9개), 데스크톱도 3열. 흰 슬롯에 가운데 정렬 */}
+            <div className="grid grid-cols-3 gap-3">
               {LOCATION_LOGOS.map((logo) => (
                 <div
                   key={logo.file}
@@ -375,13 +376,25 @@ export default async function AudioguyPage({
           {cx("ourTeam")}
         </h2>
         <div data-reveal>
-          <TeamGrid
-            members={team}
-            slots={images}
-            bioFallback={tCommon("comingSoon")}
-            columns={4}
-            portrait
-          />
+          {/* 모바일: 이미지 캐러셀(경력 포함) / 데스크톱: 그리드 */}
+          <div className="md:hidden">
+            <TeamCarousel
+              members={team}
+              slots={images}
+              bioFallback={tCommon("comingSoon")}
+              prevLabel={tCommon("previous")}
+              nextLabel={tCommon("next")}
+            />
+          </div>
+          <div className="hidden md:block">
+            <TeamGrid
+              members={team}
+              slots={images}
+              bioFallback={tCommon("comingSoon")}
+              columns={4}
+              portrait
+            />
+          </div>
         </div>
       </section>
 

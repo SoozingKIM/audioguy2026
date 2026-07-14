@@ -272,10 +272,11 @@ export default async function SeoroPage({
                 descriptionClassName="md:!text-[18px]"
               />
             </div>
-            <div data-reveal className="mt-24 grid grid-cols-1 gap-5 md:grid-cols-3">
+            <div className="mt-24 grid grid-cols-1 gap-5 md:grid-cols-3">
               {[1, 2, 3].map((n) => (
                 <div
                   key={n}
+                  data-reveal
                   className="aspect-[55/71] overflow-hidden bg-foreground bg-cover bg-center"
                   style={{ backgroundImage: `url(/seoro/card-${n}.png)` }}
                 />
@@ -296,7 +297,7 @@ export default async function SeoroPage({
               descriptionClassName="md:!text-[18px]"
             />
             {/* 로고 그리드: 5열 × 4행(20칸). 흰 배경 위 검정 로고 SVG, 각 칸 가운데 정렬. */}
-            <div className="mt-24 grid grid-cols-3 gap-x-6 gap-y-10 md:grid-cols-5 ">
+            <div className="mt-24 grid grid-cols-4 gap-x-4 gap-y-10 md:grid-cols-5 md:gap-x-6">
               {PARTNER_LOGOS.map((logo) => (
                 <div
                   key={logo.key}
@@ -307,7 +308,7 @@ export default async function SeoroPage({
                     src={`/seoro/partners/${logo.key}.${logo.ext}`}
                     alt={logo.alt}
                     style={{ maxHeight: `${logo.h}px` }}
-                    className="w-auto max-w-full object-contain"
+                    className="w-auto max-w-full origin-center scale-75 object-contain md:scale-100"
                   />
                 </div>
               ))}
@@ -338,19 +339,22 @@ export default async function SeoroPage({
                 </div>
               </div>
 
-              {/* 로고 그리드: 5열 × 5행. 다크 그라데이션 위 흰 로고 SVG, 각 칸 가운데 정렬. */}
-              <div className="mt-24 grid grid-cols-3 gap-x-6 gap-y-10 md:grid-cols-5">
-                {DSP_LOGOS.map(({ name, h }) => (
+              {/* 로고 그리드: 모바일 4열×6행(앞 24개만) / 데스크톱 5열×5행(25개 전부).
+                  다크 그라데이션 위 흰 로고 SVG, 각 칸 가운데 정렬. */}
+              <div className="mt-24 grid grid-cols-4 gap-x-4 gap-y-10 md:grid-cols-5 md:gap-x-6">
+                {DSP_LOGOS.map(({ name, h }, i) => (
                   <div
                     key={name}
-                    className="flex h-12 items-center justify-center"
+                    className={`h-12 items-center justify-center ${
+                      i >= 24 ? 'hidden md:flex' : 'flex'
+                    }`}
                   >
                     {/* eslint-disable-next-line @next/next/no-img-element */}
                     <img
                       src={dspLogoSrc(name)}
                       alt={name}
                       style={{ maxHeight: `${h}px` }}
-                      className="w-auto max-w-full object-contain"
+                      className="w-auto max-w-full origin-center scale-75 object-contain md:scale-100"
                     />
                   </div>
                 ))}

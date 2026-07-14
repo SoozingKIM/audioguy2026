@@ -5,6 +5,7 @@ import { ContactCta } from '@/components/ContactCta';
 import { HeroVideo } from '@/components/HeroVideo';
 import { SectionReveal } from '@/components/SectionReveal';
 import { StudioCarousel, type StudioSlide } from '@/components/StudioCarousel';
+import { TeamCarousel } from '@/components/TeamCarousel';
 import { TeamGrid, type TeamMember } from '@/components/TeamGrid';
 import { YouTubeEmbed } from '@/components/YouTubeEmbed';
 // 임시 숨김: discography "더보기" 버튼 주석 처리로 Link 미사용 (복구 시 주석 해제)
@@ -169,11 +170,8 @@ export default async function Sound360Page({
       </section>
 
       {/* ② DISCOGRAPHY (+ XR 카테고리) — 히어로 바로 아래 */}
-      <section
-        data-reveal
-        className="mx-auto max-w-7xl px-8 pt-28 md:pt-52 lg:px-14"
-      >
-        <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
+      <section className="mx-auto max-w-7xl px-8 pt-28 md:pt-52 lg:px-14">
+        <h2 data-reveal className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx('discography')}
         </h2>
         <div className="mt-10 flex items-center justify-between">
@@ -182,7 +180,7 @@ export default async function Sound360Page({
           </p>
         </div>
 
-        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
+        <div data-reveal className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-5">
           {discography.map((entry) => {
             const cover = imageUrl(entry.cover, 600, 600);
             return (
@@ -215,7 +213,7 @@ export default async function Sound360Page({
         <p className="mt-14 text-[15px] font-medium tracking-[-0.18px] text-foreground md:text-[18px]">
           XR
         </p>
-        <div className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        <div data-reveal className="mt-6 grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
           {XR_WORKS.map((w) => (
             <div key={w.title} className="flex flex-col gap-3">
               <div className="relative aspect-square overflow-hidden bg-background-white">
@@ -241,16 +239,13 @@ export default async function Sound360Page({
       </section>
 
       {/* ③ 작업 내용 및 범위 — service icon cards */}
-      <section
-        data-reveal
-        className="mx-auto max-w-7xl px-8 pt-28 md:pt-52 lg:px-14"
-      >
-        <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
+      <section className="mx-auto max-w-7xl px-8 pt-28 md:pt-52 lg:px-14">
+        <h2 data-reveal className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx('workScope')}
         </h2>
         <div className="mt-10 grid grid-cols-2 gap-4 md:grid-cols-4">
           {SERVICES.map((s) => (
-            <div key={s.key} className="flex flex-col gap-3">
+            <div key={s.key} data-reveal className="flex flex-col gap-3">
               <div className="relative flex aspect-[82/65] items-center justify-center overflow-hidden bg-black">
                 {/* 검은 박스에 아이콘/그래픽을 가운데 축소 배치 (4칸 통일) */}
                 {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -313,31 +308,40 @@ export default async function Sound360Page({
         <h2 className="text-[28px] font-bold leading-[1.2] tracking-[-1.5px] md:text-[40px]">
           {cx('ourTeam')}
         </h2>
-        <TeamGrid
-          members={team}
-          slots={images}
-          bioFallback={tCommon('comingSoon')}
-          portrait
-          columns={4}
-          gapClass="gap-6 md:gap-12"
-        />
+        {/* 모바일: 이미지 캐러셀(경력 포함) / 데스크톱: 그리드 */}
+        <div className="md:hidden">
+          <TeamCarousel
+            members={team}
+            slots={images}
+            bioFallback={tCommon('comingSoon')}
+            prevLabel={tCommon('previous')}
+            nextLabel={tCommon('next')}
+          />
+        </div>
+        <div className="hidden md:block">
+          <TeamGrid
+            members={team}
+            slots={images}
+            bioFallback={tCommon('comingSoon')}
+            portrait
+            columns={4}
+            gapClass="gap-6 md:gap-12"
+          />
+        </div>
       </section>
 
       {/* ⑥ 소개 영상 + 위치 — 2분할: 왼쪽 브랜드 영상, 오른쪽 네이버 지도 */}
-      <section
-        data-reveal
-        className="mt-28 md:mt-52 w-full overflow-hidden"
-      >
+      <section className="mt-28 md:mt-52 w-full overflow-hidden">
         <div className="mx-auto max-w-7xl px-8 lg:px-14">
           {/* 영상은 좌측 끝선, 지도는 우측 끝선에 붙이고 가운데를 띄운다 */}
           <div className="flex flex-col gap-8 lg:flex-row lg:items-stretch lg:justify-between">
             {/* 왼쪽: 영상 — 16:9, 가로형 지도와 같은 높이를 채움 */}
-            <div className="flex items-center bg-black lg:w-[56%]">
+            <div data-reveal className="flex items-center bg-black lg:w-[56%]">
               <YouTubeEmbed id="FE-XGEdusDw" title={cx('title')} />
             </div>
             {/* 오른쪽: 지도 — 우측 그리드 끝선에 고정, 가로로 긴 4:3 비율로 고정.
                 폭 40% × 3/4 = 높이 30% → 영상 16:9 높이(30%)와 정확히 일치 */}
-            <div className="relative aspect-[4/3] w-full lg:w-[42%]">
+            <div data-reveal className="relative aspect-[4/3] w-full lg:w-[42%]">
               <iframe
                 src={SOUND360_GMAP_EMBED}
                 title={SOUND360_ADDRESS}

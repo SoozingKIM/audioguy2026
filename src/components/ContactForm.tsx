@@ -10,6 +10,23 @@ const BRAND_LABELS: Record<ContactBrand, string> = {
   seoro: "SEORO",
 };
 
+function InfoIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      className="mt-px size-[12px] shrink-0 text-foreground/40"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.6"
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 11.5v4.5" strokeLinecap="round" />
+      <circle cx="12" cy="8" r="0.9" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
 /** Form copy, resolved on the server (Sanity-managed, i18n fallback). */
 export type ContactLabels = {
   brand: string;
@@ -29,6 +46,8 @@ export type ContactLabels = {
   submitting: string;
   success: string;
   error: string;
+  /** Short description shown under the tabs for the selected service. */
+  serviceDesc: Record<ContactBrand, string>;
 };
 
 type Status =
@@ -102,6 +121,21 @@ export function ContactForm({ labels: t }: { labels: ContactLabels }) {
               </button>
             );
           })}
+        </div>
+        {/* 선택된 서비스 설명 — 툴팁 대신 항상 보이는 헬퍼 카드(모바일 터치 대응).
+            정보 아이콘 + 라이트 박스로 '설명글' 느낌을 살린다. */}
+        <div className="mt-2 flex items-start gap-1.5 rounded-[9px] bg-[#e6eaee] px-3 py-1.5">
+          <InfoIcon />
+          <p
+            key={brand}
+            className="animate-[fadeIn_0.3s_ease-out] text-[10.5px] leading-snug tracking-[-0.11px] text-secondary"
+          >
+            <span className="font-semibold text-foreground">
+              {BRAND_LABELS[brand]}
+            </span>
+            <span className="mx-1.5 text-foreground/30">—</span>
+            {t.serviceDesc[brand]}
+          </p>
         </div>
       </div>
 

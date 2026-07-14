@@ -316,7 +316,10 @@
   },
   "Contact": {
     "title": "CONTACT",
-    "brand": "お問い合わせブランド",
+    "brand": "サービス",
+    "serviceDescAudioguy": "スタジオ・実況録音",
+    "serviceDescSound360": "空間音響 Mixing & Mastering",
+    "serviceDescSeoro": "音源流通",
     "company": "会社名",
     "name": "ご担当者名",
     "position": "部署 / 役職",
